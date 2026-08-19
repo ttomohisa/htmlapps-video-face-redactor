@@ -2,6 +2,7 @@
 
 ## 1.0.0
 
+- Fixed Windows PowerShell 5.1 repository checks by keeping the check script ASCII-only and avoiding locale-sensitive UI strings.
 - Added conditional H.265/HEVC input support for `hvc1.*` / `hev1.*` MP4/MOV files using WebCodecs and the MP4 `hvcC` decoder configuration.
 - Added HEVC codec normalization fallback so inputs reported as `hvc1.1.6.L123` also probe `hvc1.1.6.L123.00`.
 - HEVC input is decoded only when the current browser/device confirms support; output remains H.264 MP4.
