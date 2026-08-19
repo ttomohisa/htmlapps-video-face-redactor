@@ -1,0 +1,31 @@
+name: Build standalone HTML
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repository checks
+        shell: powershell
+        run: .\scripts\check-repository.ps1
+      - name: Build standalone
+        shell: powershell
+        run: .\build-standalone.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: standalone-html
+          path: |
+            dist/index.html
+            dist/index.self-extract.html
+            dist/self-extract-manifest.json
+            dist/dependency-manifest.json
+            video-face-redactor.html

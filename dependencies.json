@@ -1,0 +1,29 @@
+{
+  "dependencies": [
+    {
+      "name": "mp4box",
+      "version": "2.4.1",
+      "license": "BSD-3-Clause",
+      "files": [
+        {
+          "id": "main",
+          "file": "mp4box.all.mjs",
+          "url": "https://cdn.jsdelivr.net/npm/mp4box@2.4.1/dist/mp4box.all.mjs",
+          "placeholder": "__MP4BOX_MAIN_GZIP_B64__"
+        },
+        {
+          "id": "core",
+          "file": "styp-9TIZZDLN.mjs",
+          "url": "https://cdn.jsdelivr.net/npm/mp4box@2.4.1/dist/styp-9TIZZDLN.mjs",
+          "placeholder": "__MP4BOX_CORE_GZIP_B64__"
+        },
+        {
+          "id": "runtime",
+          "file": "rolldown-runtime-w6R9maHv.mjs",
+          "url": "https://cdn.jsdelivr.net/npm/mp4box@2.4.1/dist/rolldown-runtime-w6R9maHv.mjs",
+          "placeholder": "__MP4BOX_RUNTIME_GZIP_B64__"
+        }
+      ]
+    }
+  ]
+}
