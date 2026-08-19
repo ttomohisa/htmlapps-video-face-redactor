@@ -1,6 +1,11 @@
 # Changelog
 
 ## 1.0.0
+- Fixed portrait smartphone videos whose MP4 track stores landscape coded dimensions plus rotation metadata: detected face boxes are now mapped between coded and displayed coordinates correctly.
+- Show the display-oriented resolution first (for example 1080×1920, with the stored 1920×1080 size noted when different), keep exact-frame/manual editing aligned, and export rotated inputs in their visible orientation.
+- Start continuous review playback automatically from the beginning after face detection completes.
+- Clear the previous video frame, detected tracks, review frame, timeline marks, and analysis state immediately when a new video is selected so stale overlays cannot remain on the new first frame.
+
 - Added GitHub Pages deployment workflow, live demo links, and Pages setup guides aligned with html-pdf-organizer/template conventions.
 
 - Fixed Windows PowerShell 5.1 repository checks by keeping the check script ASCII-only and avoiding locale-sensitive UI strings.

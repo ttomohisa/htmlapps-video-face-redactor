@@ -44,12 +44,16 @@
 ## Review controls
 
 - Continuous review uses `HTMLVideoElement.requestVideoFrameCallback()` when available so the canvas preview and masks update on presented video frames; `requestAnimationFrame()` is the fallback.
+- After a successful full-video face analysis, review playback automatically restarts from the beginning. If browser autoplay policy blocks it, the UI asks the user to press Continuous play.
+- Selecting a new video clears the previous preview pixels and all automatic detection/review state before the new first frame is shown.
 - Selecting a manual mask jumps to its stored edit/anchor time and enables drag repositioning on the preview canvas.
 
 
 ## Precise frame review
 
 - Face detector preprocessing: 640×640 letterbox preserving source aspect ratio; detections are mapped back after removing padding.
+- MP4 track-header rotation is parsed separately from coded frame dimensions. Automatic detections remain in coded-frame coordinates internally and are transformed to the display orientation for preview/manual editing.
+- Portrait sources stored as landscape coded frames plus 90°/270° rotation metadata are shown using display-oriented dimensions, and export physically renders that display orientation so the saved MP4 does not depend on the original rotation matrix.
 - Frame stepping: use MP4 sample PTS and direct WebCodecs decode from the preceding keyframe to the target sample.
 - Review state: sampled / interpolated / re-detected.
 - Per-frame re-detection: rerun YuNet on the exact decoded frame and update automatic track keyframes.
