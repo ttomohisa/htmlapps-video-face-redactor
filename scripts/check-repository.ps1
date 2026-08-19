@@ -14,7 +14,10 @@ $required = @(
     'README.md',
     'README.ja.md',
     'LICENSE',
-    'THIRD_PARTY_NOTICES.md'
+    'THIRD_PARTY_NOTICES.md',
+    '.github\workflows\deploy-pages.yml',
+    'docs\GITHUB_PAGES.md',
+    'docs\GITHUB_PAGES.ja.md'
 )
 
 foreach ($relativePath in $required) {

@@ -1,6 +1,7 @@
 # Changelog
 
 ## 1.0.0
+- Added GitHub Pages deployment workflow, live demo links, and Pages setup guides aligned with html-pdf-organizer/template conventions.
 
 - Fixed Windows PowerShell 5.1 repository checks by keeping the check script ASCII-only and avoiding locale-sensitive UI strings.
 - Added conditional H.265/HEVC input support for `hvc1.*` / `hev1.*` MP4/MOV files using WebCodecs and the MP4 `hvcC` decoder configuration.

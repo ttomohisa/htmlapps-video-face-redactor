@@ -1,14 +1,22 @@
 # Video Face Redactor
 
-[![Build standalone HTML](https://github.com/ttomohisa/htmlapps-video-face-redactor/actions/workflows/build-standalone.yml/badge.svg)](https://github.com/ttomohisa/htmlapps-video-face-redactor/actions/workflows/build-standalone.yml)
+[![GitHub Pages](https://github.com/ttomohisa/htmlapps-video-face-redactor/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/ttomohisa/htmlapps-video-face-redactor/actions/workflows/deploy-pages.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Single HTML](https://img.shields.io/badge/distribution-single%20HTML-0ea5e9)](#quick-start)
+[![Single HTML](https://img.shields.io/badge/distribution-single%20HTML-0ea5e9)](https://ttomohisa.github.io/htmlapps-video-face-redactor/)
 
 [日本語版 README](README.ja.md)
 
 A privacy-focused, single-HTML app for finding faces in videos and hiding them with pixelation, blur, solid fill, or emoji — without uploading the selected video to a server.
 
 Video Face Redactor runs face detection, review/editing, redaction, and H.264 MP4 export locally in the browser. H.264/AVC input is supported, and H.265/HEVC input is also accepted when the current browser/device can decode it through WebCodecs.
+
+## 🚀 Live demo
+
+### [Open Video Face Redactor on GitHub Pages](https://ttomohisa.github.io/htmlapps-video-face-redactor/)
+
+GitHub Pages delivers the initial HTML. After it loads, video parsing, face detection, review/editing, masking, and MP4 export are processed locally on your device. The video you select is not uploaded by the app.
+
+HEVC/H.265 input depends on the browser, OS, and device decoder. The app checks compatibility when a video is selected.
 
 ## Features
 
@@ -38,6 +46,10 @@ Video Face Redactor runs face detection, review/editing, redaction, and H.264 MP
 > Face detection and tracking are not perfect. Review the entire video before sharing the exported file.
 
 ## Quick start
+
+### Use the web demo
+
+Just [open the GitHub Pages demo](https://ttomohisa.github.io/htmlapps-video-face-redactor/). No installation or account is required.
 
 ### Use the generated single HTML file
 
@@ -98,6 +110,19 @@ Export is H.264 MP4. The app checks whether the current browser/device can encod
 
 Compatible AAC (`mp4a`) audio is copied into the output MP4 without re-encoding. Unsupported audio formats are exported without audio after a warning.
 
+## Publish with GitHub Pages
+
+The repository includes a workflow that builds the fully embedded HTML and deploys `dist/` to GitHub Pages automatically.
+
+1. Open **Settings -> Pages -> Build and deployment -> Source** and select **GitHub Actions** once.
+2. Push to `main`, or manually run **Deploy standalone app to GitHub Pages** from the Actions tab.
+3. The workflow runs repository checks, rebuilds the standalone HTML from pinned dependencies, and publishes `dist/`.
+4. After a successful deployment, the demo is available at <https://ttomohisa.github.io/htmlapps-video-face-redactor/>.
+
+If Pages has not been enabled yet, the workflow still builds the app and skips only the deployment, with setup instructions in the Actions summary.
+
+See the [GitHub Pages deployment guide](docs/GITHUB_PAGES.md) for setup and troubleshooting.
+
 ## Development and build layout
 
 ```text
@@ -113,8 +138,12 @@ Compatible AAC (`mp4a`) audio is copied into the output MP4 without re-encoding.
 │  └─ verify-self-extract.ps1       # Self-extract verification
 ├─ dist/index.html                  # Generated standalone HTML
 ├─ video-face-redactor.html         # Generated root-level standalone copy
+├─ docs/
+│  ├─ GITHUB_PAGES.md               # GitHub Pages setup and troubleshooting
+│  └─ GITHUB_PAGES.ja.md            # Japanese Pages guide
 └─ .github/workflows/
-   └─ build-standalone.yml          # Build validation on push / pull request
+   ├─ build-standalone.yml          # Build validation on push / pull request
+   └─ deploy-pages.yml              # Build and deploy dist/ to GitHub Pages
 ```
 
 ### Build on Windows
@@ -181,6 +210,8 @@ The standalone HTML contains the runtime assets required for face detection and 
 - MP4Box.js is embedded by the build process
 - The generated page uses a Content Security Policy containing `connect-src 'none'`
 - No CDN is contacted while the generated app is running
+
+The GitHub Pages version requires one initial HTML request from GitHub. After the page loads, selected videos stay in the browser and are not uploaded by the app. For a fully disconnected session, open the generated `dist/index.html` locally.
 
 The build step may use the network to obtain pinned dependencies. That is separate from runtime video processing.
 

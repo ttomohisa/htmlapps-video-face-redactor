@@ -1,14 +1,22 @@
 # Video Face Redactor / 動画顔ぼかし
 
-[![Build standalone HTML](https://github.com/ttomohisa/htmlapps-video-face-redactor/actions/workflows/build-standalone.yml/badge.svg)](https://github.com/ttomohisa/htmlapps-video-face-redactor/actions/workflows/build-standalone.yml)
+[![GitHub Pages](https://github.com/ttomohisa/htmlapps-video-face-redactor/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/ttomohisa/htmlapps-video-face-redactor/actions/workflows/deploy-pages.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Single HTML](https://img.shields.io/badge/distribution-single%20HTML-0ea5e9)](#すぐに使う)
+[![Single HTML](https://img.shields.io/badge/distribution-single%20HTML-0ea5e9)](https://ttomohisa.github.io/htmlapps-video-face-redactor/)
 
 [English README](README.md)
 
 動画内の顔を自動で見つけ、**モザイク / ぼかし / 塗りつぶし / 絵文字**で隠してMP4へ保存できる、プライバシー重視の単一HTMLアプリです。
 
 選択した動画はサーバーへアップロードせず、顔検出・確認と修正・マスク処理・動画の書き出しまでブラウザ内で行います。H.264/AVC動画に加え、ブラウザ・端末が対応している場合はH.265/HEVC動画も読み込めます。
+
+## 🚀 デモ
+
+### [GitHub PagesでVideo Face Redactorを開く](https://ttomohisa.github.io/htmlapps-video-face-redactor/)
+
+GitHub Pagesから最初のHTMLを読み込んだ後、動画の解析・顔検出・確認と修正・マスク処理・MP4書き出しは端末内で行われます。選択した動画がアプリからサーバーへアップロードされることはありません。
+
+H.265/HEVC入力はブラウザ・OS・端末の対応状況に依存し、動画を選択したときにアプリが自動確認します。
 
 ## 主な機能
 
@@ -38,6 +46,10 @@
 > 顔検出・追跡は完全ではありません。共有する前に、書き出した動画を最初から最後まで必ず確認してください。
 
 ## すぐに使う
+
+### Webで使う
+
+[GitHub Pagesのデモを開く](https://ttomohisa.github.io/htmlapps-video-face-redactor/)だけで利用できます。インストールやアカウント登録は不要です。
 
 ### 単一HTMLで使う
 
@@ -100,6 +112,19 @@ Pixelで撮影した動画に見られる `hvc1.1.6.L123` のようなHEVC動画
 
 対応するAAC (`mp4a`) 音声は再圧縮せず、そのまま新しいMP4へ引き継ぎます。v1で扱えない音声形式の場合は警告を表示し、無音で書き出します。
 
+## GitHub Pagesで公開する
+
+このリポジトリには、完全内包版をビルドして `dist/` をGitHub Pagesへ自動公開するワークフローを含めます。
+
+1. 最初に **Settings -> Pages -> Build and deployment -> Source** で **GitHub Actions** を選択します。
+2. `main` へプッシュするか、Actions画面から **Deploy standalone app to GitHub Pages** を手動実行します。
+3. リポジトリ検査と単一HTMLの再ビルド後、`dist/` がPagesへ公開されます。
+4. 成功後は <https://ttomohisa.github.io/htmlapps-video-face-redactor/> で利用できます。
+
+Pagesがまだ有効になっていない場合でも、ワークフローはアプリのビルドまでは行い、公開だけをスキップしてActionsの概要に設定手順を表示します。
+
+詳しい設定とトラブルシューティングは [GitHub Pages公開ガイド](docs/GITHUB_PAGES.ja.md) を確認してください。
+
 ## 開発とビルド
 
 ```text
@@ -115,8 +140,12 @@ Pixelで撮影した動画に見られる `hvc1.1.6.L123` のようなHEVC動画
 │  └─ verify-self-extract.ps1       # 自己解凍版の検証
 ├─ dist/index.html                  # 生成される単一HTML
 ├─ video-face-redactor.html         # リポジトリ直下にも生成する単一HTML
+├─ docs/
+│  ├─ GITHUB_PAGES.md               # GitHub Pages設定・トラブルシューティング
+│  └─ GITHUB_PAGES.ja.md            # 日本語のPages公開ガイド
 └─ .github/workflows/
-   └─ build-standalone.yml          # push / Pull Request時のビルド検証
+   ├─ build-standalone.yml          # push / Pull Request時のビルド検証
+   └─ deploy-pages.yml              # dist/をGitHub Pagesへ自動公開
 ```
 
 ### Windowsでビルド
