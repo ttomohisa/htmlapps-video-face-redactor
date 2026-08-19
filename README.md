@@ -1,60 +1,216 @@
 # Video Face Redactor
 
-[日本語 README](README.ja.md)
+[![Build standalone HTML](https://github.com/ttomohisa/htmlapps-video-face-redactor/actions/workflows/build-standalone.yml/badge.svg)](https://github.com/ttomohisa/htmlapps-video-face-redactor/actions/workflows/build-standalone.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Single HTML](https://img.shields.io/badge/distribution-single%20HTML-0ea5e9)](#quick-start)
 
-A privacy-first, single-HTML video face redaction tool built with **YuNet + ONNX Runtime Web**, **WebCodecs**, and **MP4Box.js**. It detects faces on sampled frames, builds lightweight tracks, interpolates masks between detections, renders pixelation / blur / fill / emoji locally, and exports H.264 MP4. AAC audio is copied without re-encoding when compatible.
+[日本語版 README](README.ja.md)
 
-## v1.0.0
+A privacy-focused, single-HTML app for finding faces in videos and hiding them with pixelation, blur, solid fill, or emoji — without uploading the selected video to a server.
 
-- MP4 / MOV input with H.264/AVC or H.265/HEVC video (HEVC when supported by the browser/device)
-- Separate runtime indicators for WebCodecs APIs, exact input H.264/H.265 decoder support, and selected-output H.264 encoder support
-- Profile/level-aware input checks (for example `avc1.640033`) with `VideoDecoder.isConfigSupported()`
-- Automatic YuNet face detection after video load (default 5 fps; 1 / 2 / 5 / 10 fps available for re-analysis)
-- Lightweight track association and interpolation
-- Pixelate / blur / fill / **emoji**
-- Manual masks with interpolated manual keyframes
-- H.264 export through WebCodecs
-- AAC passthrough when compatible
-- Original / 1080p / 720p output
-- Editable MP4 output file name
-- Japanese / English UI
-- Runtime network blocked with `connect-src 'none'`
-- Single HTML and self-extracting HTML builds
+Video Face Redactor runs face detection, review/editing, redaction, and H.264 MP4 export locally in the browser. H.264/AVC input is supported, and H.265/HEVC input is also accepted when the current browser/device can decode it through WebCodecs.
 
-> Face detection and tracking are fallible. Review the entire exported video before sharing it.
+## Features
 
-## Smartphone UI
+- Automatically starts face detection after a video is loaded
+- Face detection with YuNet + ONNX Runtime Web
+- 1 / 2 / 5 / 10 checks per second for re-analysis
+- Final-frame detection to reduce missed faces at the end of a video
+- Aspect-ratio-preserving face analysis to improve mask alignment
+- Frame-by-frame review plus continuous playback
+- Exact-frame review using MP4 sample timestamps
+- Re-detect the current frame when a face mask is misplaced
+- Pixelate / blur / solid fill / emoji redaction
+- Adjustable mask padding
+- Manual masks for missed faces
+- Manual-mask duration: one frame, ±1 / 3 / 5 seconds, or the whole video
+- Manual masks can follow edited positions or stay fixed
+- Original / 1080p / 720p output sizes
+- Editable output filename
+- AAC audio passthrough when compatible
+- Japanese and English UI in the same HTML
+- Mobile-first controls with a safe-area-aware bottom navigation bar
+- Face-detection progress shown directly over the preview on mobile
+- Embedded SVG favicon
+- Runtime network access blocked with `connect-src 'none'`
+- Standalone HTML and self-extracting HTML builds
 
-At 600px and below, the fixed safe-area bottom bar uses **Video / Faces / Review/Edit / Style / Save**. Face detection progress is also shown directly over the preview so mobile users do not need to scroll back to the settings panel. The Style section is moved directly below the preview on mobile so users can switch pixelate / blur / fill / emoji while looking at the video. A single four-column row of style buttons, strength presets, duration chips, and movement choices replace small select-heavy controls. Mask padding is kept out of the timeline area and appears as a small translucent `- / +` control inside the preview.
+> Face detection and tracking are not perfect. Review the entire video before sharing the exported file.
 
-## Build
+## Quick start
 
-Run `build-standalone.bat` on Windows. The first build downloads pinned **MP4Box.js 2.4.1** into `vendor/`, then embeds it into `dist/index.html`. No CDN is used at runtime.
+### Use the generated single HTML file
 
-To reduce the standalone HTML size without changing the UI or detector behavior, MP4Box.js is gzip-compressed at build time before Base64 embedding. ONNX Runtime Web JavaScript, WASM, and the YuNet model are also stored as gzip payloads and restored with the browser's existing `DecompressionStream` path.
+1. Build the app once with `build-standalone.bat` on Windows.
+2. Open `dist/index.html` or the generated root-level `video-face-redactor.html` in a supported browser.
+3. Choose an MP4 or MOV video.
+4. Face detection starts automatically.
 
-The UI follows the `htmlapps-template` light-theme header/card/help conventions. H.264/H.265 input decoding and H.264 output encoding are checked separately at runtime. HEVC inputs use their MP4 `hvcC` decoder configuration and are accepted only when `VideoDecoder.isConfigSupported()` confirms support on the current browser/device.
+No account, upload, Python, Node.js, or local web server is required.
 
-See [README.ja.md](README.ja.md) for architecture, supported formats, privacy notes, and limitations.
+### Use it fully offline
+
+After the standalone HTML has been built, copy `dist/index.html` wherever you need it. The runtime libraries and face-detection model are embedded in the HTML, so the app can be opened later without a network connection.
+
+The first build needs network access only to download the pinned MP4Box.js files used by the build process.
+
+## Usage
+
+1. Choose an MP4 or MOV video from the file picker or directly from the empty preview area.
+2. Wait for automatic face detection to finish. Progress is shown in the preview.
+3. Use **Review / Edit** to play the video or move one frame at a time.
+4. If a mask is misplaced, stop on that frame and use **Find faces in this scene again**.
+5. Choose **Pixelate**, **Blur**, **Fill**, or **Emoji** as the hiding style.
+6. Adjust the mask padding if the edge of a face remains visible.
+7. Add a manual mask when automatic detection misses a face, then choose how long it should remain and whether its position should move.
+8. Set the output filename, resolution, quality, and audio option.
+9. Export the H.264 MP4 and review the entire result before sharing it.
+
+### Mobile controls
+
+On screens up to 600px wide, a fixed bottom navigation bar provides quick access to:
+
+- **Video** — choose or replace the input video
+- **Faces** — face-detection settings and re-analysis
+- **Review / Edit** — playback, frame stepping, and corrections
+- **Style** — pixelate / blur / fill / emoji and manual masks
+- **Save** — output filename and export settings
+
+The hiding-style buttons appear directly below the preview on mobile, while mask padding is kept as a small secondary control so it is not confused with the video timeline.
+
+## Supported formats
+
+### Video input
+
+| Input | Support |
+| --- | --- |
+| H.264 / AVC (`avc1.*`, `avc3.*`) | Supported when the browser can decode the exact video |
+| H.265 / HEVC (`hvc1.*`, `hev1.*`) | Supported when the browser/device provides WebCodecs HEVC decoding |
+| AV1 / VP9 | Not supported in v1 |
+
+Pixel videos using codec strings such as `hvc1.1.6.L123` can be opened when HEVC decoding is available in the current browser/device. Compatibility is checked automatically when the video is loaded.
+
+### Video output
+
+Export is H.264 MP4. The app checks whether the current browser/device can encode the selected output resolution before enabling export.
+
+### Audio
+
+Compatible AAC (`mp4a`) audio is copied into the output MP4 without re-encoding. Unsupported audio formats are exported without audio after a warning.
+
+## Development and build layout
+
+```text
+.
+├─ src/index.template.html          # Application template and embedded runtime assets
+├─ app.config.json                  # App metadata and output settings
+├─ dependencies.json                # Pinned MP4Box.js build dependencies
+├─ build-standalone.bat             # Windows build entry point
+├─ build-standalone.ps1             # Standalone HTML builder
+├─ scripts/
+│  ├─ build-self-extract.ps1        # Self-extracting HTML builder
+│  ├─ check-repository.ps1          # Repository checks
+│  └─ verify-self-extract.ps1       # Self-extract verification
+├─ dist/index.html                  # Generated standalone HTML
+├─ video-face-redactor.html         # Generated root-level standalone copy
+└─ .github/workflows/
+   └─ build-standalone.yml          # Build validation on push / pull request
+```
+
+### Build on Windows
+
+```bat
+build-standalone.bat
+```
+
+The first build downloads the exact MP4Box.js version pinned in `dependencies.json` and caches the files under `vendor/`.
+
+To download the pinned MP4Box.js files again:
+
+```powershell
+.\build-standalone.ps1 -RefreshDependencies
+```
+
+To skip the self-extracting HTML build:
+
+```powershell
+.\build-standalone.ps1 -SkipSelfExtract
+```
+
+The build process automatically:
+
+- Downloads the pinned MP4Box.js 2.4.1 ESM chunks when they are not cached
+- Gzip-compresses MP4Box.js before Base64 embedding
+- Keeps ONNX Runtime Web JavaScript, WASM, and the YuNet model gzip-compressed inside the HTML
+- Rejects unresolved dependency placeholders
+- Rejects external runtime `<script src="https://...">` references
+- Writes `dist/dependency-manifest.json` with source URLs, sizes, and SHA-256 hashes
+- Generates `dist/index.html`
+- Generates `dist/index.self-extract.html`
+- Generates the convenient root-level `video-face-redactor.html` copy
+
+## How it works
+
+```text
+MP4 / MOV
+   ↓
+MP4Box.js
+   ↓
+H.264 / H.265 compressed video samples
+   ↓
+WebCodecs VideoDecoder
+   ↓
+Video frames
+   ├─ YuNet face detection → face positions → review / manual correction
+   └─ Canvas redaction → WebCodecs VideoEncoder (H.264)
+                                      ↓
+Compatible AAC audio ─────── copied ──┤
+                                      ↓
+                                  MP4Box.js
+                                      ↓
+                                   MP4 file
+```
+
+## Privacy and runtime network protection
+
+The standalone HTML contains the runtime assets required for face detection and video processing.
+
+- Selected videos are processed locally in the browser
+- The app contains no upload flow for video or audio data
+- YuNet, ONNX Runtime Web JavaScript, and ONNX Runtime WebAssembly are embedded in the HTML
+- MP4Box.js is embedded by the build process
+- The generated page uses a Content Security Policy containing `connect-src 'none'`
+- No CDN is contacted while the generated app is running
+
+The build step may use the network to obtain pinned dependencies. That is separate from runtime video processing.
+
+## Limitations
+
+- Face detection and tracking can miss faces or place a mask incorrectly, especially with fast motion, occlusion, extreme angles, or very small faces.
+- H.265 / HEVC input depends on browser, OS, and device decoder support.
+- Export is H.264 MP4 even when the input video is HEVC.
+- Non-AAC audio is not re-encoded in v1 and may result in silent output.
+- Long or 4K videos can use substantial memory because compressed samples and encoded output are kept in memory before final MP4 muxing.
+- Unusual MOV structures and some rotation-metadata combinations may need further compatibility work.
+- The exported video should always be reviewed from beginning to end before it is shared.
+
+## Dependencies
+
+| Library / model | Version | License | Purpose |
+| --- | ---: | --- | --- |
+| ONNX Runtime Web | 1.27.0 | MIT | Browser-side YuNet inference |
+| YuNet face detection model | embedded model | MIT | Face detection |
+| MP4Box.js | 2.4.1 | BSD-3-Clause | MP4/MOV parsing, sample extraction, and MP4 muxing |
+| WebCodecs | Browser API | — | Video decoding and H.264 encoding |
+
+See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for third-party notices.
+
+## Contributing
+
+Bug reports and feature proposals are welcome through GitHub Issues.
 
 ## License
 
-MIT. See `THIRD_PARTY_NOTICES.md` for third-party notices.
+Copyright © 2026 ttomohisa
 
-
-The build also writes an expanded root-level `video-face-redactor.html` copy and `dist/dependency-manifest.json` with the exact MP4Box.js chunk hashes.
-
-
-## Review and manual masks
-
-- Frame-by-frame review with previous/next frame controls plus continuous playback. When available, continuous review is synchronized to presented video frames with `requestVideoFrameCallback()`. During continuous playback the small review-status label stays on a stable “Playing” state; checked/estimated detail is shown only when paused.
-- The final real frame is always included in face analysis; tracks reaching the end are safely held through the video tail.
-- Manual-mask duration can be 1 frame, ±1/3/5 seconds, or the whole video. Interpolation can be smooth or hold-position per mask. Selecting a manual-mask card jumps to its stored edit frame; drag the highlighted mask in the preview to reposition it.
-
-
-### Precise review
-
-- YuNet analysis uses aspect-ratio-preserving 640×640 letterboxing.
-- Frame stepping directly decodes the selected MP4 presentation timestamp with WebCodecs.
-- The UI labels sampled, interpolated, and re-detected frames.
-- Re-detect this frame reruns YuNet and corrects automatic track keyframes at that exact frame.
+Licensed under the [MIT License](LICENSE).
