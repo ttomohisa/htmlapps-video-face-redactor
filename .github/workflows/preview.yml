@@ -46,7 +46,7 @@ jobs:
 
       - name: Build and verify standalone HTML
         shell: pwsh
-        run: ./scripts/check-repository.ps1
+        run: ./scripts/check-repository.ps1 -Build
 
       - name: Check Cloudflare preview credentials
         id: cloudflare
