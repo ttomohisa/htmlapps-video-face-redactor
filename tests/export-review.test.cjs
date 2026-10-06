@@ -6,7 +6,8 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { test } = require('node:test');
 const source = fs.readFileSync(process.env.APP_SOURCE || path.join(__dirname, '../src/index.template.html'), 'utf8');
-const lines = source.split('\n');
+// Git checkouts can use CRLF on Windows; keep function boundaries platform-neutral.
+const lines = source.split(/\r?\n/);
 function production(name, optional = false) {
   const start = lines.findIndex(line => new RegExp(`^(?:async )?function ${name}\\(`).test(line));
   if (start < 0 && optional) return '';
