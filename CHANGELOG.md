@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+- Add a localized Export mask summary for enabled/total automatic paths and manual covers, disabled masks, and enabled automatic paths flagged for review, with a persistent whole-video review reminder.
+- Reset analysis completion before every full rerun so failures cannot leave desktop Export or mobile Save enabled; ignore late work from failed attempts while preserving manual covers.
+- Add synthetic-frame regression tests to the repository checks. No detector, model, tracking geometry, or export encoding changes.
+
 ## 1.0.0
 - Fixed portrait smartphone videos whose MP4 track stores landscape coded dimensions plus rotation metadata: detected face boxes are now mapped between coded and displayed coordinates correctly.
 - Show the display-oriented resolution first (for example 1080×1920, with the stored 1920×1080 size noted when different), keep exact-frame/manual editing aligned, and export rotated inputs in their visible orientation.

@@ -37,7 +37,8 @@
 - Input compatibility is checked with `VideoDecoder.isConfigSupported()` using the actual codec/profile/level and dimensions.
 - Export compatibility is checked with `VideoEncoder.isConfigSupported()` for the selected output resolution; source/1080p/720p can differ.
 - Unsupported codecs are rejected instead of silently producing a broken file.
-- Export remains disabled until face analysis completes and the selected H.264 output configuration is supported.
+- Export remains disabled until face analysis completes and the selected H.264 output configuration is supported. Starting a full re-analysis resets completion; a failed attempt keeps desktop Export and mobile Save disabled until a successful retry. Late callbacks from a failed attempt cannot change the next attempt's masks or status.
+- The Export card summarizes enabled/total automatic paths and manual covers, disabled masks, and enabled automatic paths flagged for review. Counts describe paths, not unique people; zero masks or zero flags never certifies privacy. The whole-video/exported-result review warning stays visible.
 - Users can edit the exported MP4 file name; invalid filename characters are sanitized and `.mp4` is enforced.
 - UI follows the `htmlapps-template` light-theme header, spacing, card, help-dialog, and mobile-first conventions.
 

@@ -76,7 +76,8 @@ The first build needs network access only to download the pinned MP4Box.js files
 6. Adjust the mask padding if the edge of a face remains visible.
 7. Add a manual mask when automatic detection misses a face, then choose how long it should remain and whether its position should move.
 8. Set the output filename, resolution, quality, and audio option.
-9. Export the H.264 MP4 and review the entire result before sharing it.
+9. Check the Export mask summary: enabled/total automatic paths and manual covers, disabled masks, and enabled automatic paths flagged for review. Paths are not unique-person counts; zero masks or zero flags does not mean every face is hidden.
+10. Export the H.264 MP4 and review the entire result before sharing it. If a full re-analysis fails, finish a successful retry before Export or mobile Save becomes available.
 
 ### Mobile controls
 
@@ -235,6 +236,10 @@ The build step may use the network to obtain pinned dependencies. That is separa
 | WebCodecs | Browser API | — | Video decoding and H.264 encoding |
 
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for third-party notices.
+
+## Regression tests
+
+With Node.js 22 or newer installed, run `node --test tests/export-review.test.cjs`. The repository check also runs this suite. It extracts production UI/analysis functions and exercises synthetic frames and rectangles with decoder/detector test doubles; it does not test real inference, encoding, browser layout, or anonymization quality.
 
 ## Contributing
 
