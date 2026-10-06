@@ -103,6 +103,9 @@ if ($source.Contains('const ORT_JS="') -or $source.Contains('const YUNET="')) {
     throw 'Uncompressed embedded detector asset found'
 }
 
+& node --test (Join-Path $Root 'tests/export-review.test.cjs')
+if ($LASTEXITCODE -ne 0) { throw 'Export review regression tests failed.' }
+
 Write-Host 'Repository checks passed.' -ForegroundColor Green
 
 if ($Build) {
