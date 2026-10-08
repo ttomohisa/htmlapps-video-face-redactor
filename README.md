@@ -221,7 +221,8 @@ The build step may use the network to obtain pinned dependencies. That is separa
 - Face detection and tracking can miss faces or place a mask incorrectly, especially with fast motion, occlusion, extreme angles, or very small faces.
 - H.265 / HEVC input depends on browser, OS, and device decoder support.
 - Export is H.264 MP4 even when the input video is HEVC.
-- Non-AAC audio is not re-encoded in v1 and may result in silent output.
+- Non-AAC audio and unsupported audio/video presentation timelines export silently, with a warning and disabled audio checkbox. AAC copying supports absent/identity edits or one full-tail head-priming edit, optionally preceded by an empty delay. Tail trimming, disjoint/rate-changing edits and discontinuities are deliberately unsupported. Both source tracks are checked against retained fragment timing before AAC copying. Only exact canonical microsecond video grids at the eight documented common rates may restore the observed raw timestamps lost by parsing, so ordinary own-export reimport preserves its clock. Arbitrary gaps, missing explicit fragment starts or mixed classic/fragmented tracks still disable audio. See [Audio timeline safety](APP_SPEC.md#audio-timeline-safety-101).
+- Exported MP4 is fragmented. Empty classic sample tables, missing `nb_frames`, and FFprobe raw/nominal audio duration reports require fragment-aware checks; media duration is not falsified to alter these reports.
 - Long or 4K videos can use substantial memory because compressed samples and encoded output are kept in memory before final MP4 muxing.
 - Unusual MOV structures and some rotation-metadata combinations may need further compatibility work.
 - The exported video should always be reviewed from beginning to end before it is shared.
@@ -239,7 +240,9 @@ See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for third-party notices.
 
 ## Regression tests
 
-With Node.js 22 or newer installed, run `node --test tests/export-review.test.cjs`. The repository check also runs this suite. It extracts production UI/analysis functions and exercises synthetic frames and rectangles with decoder/detector test doubles; it does not test real inference, encoding, browser layout, or anonymization quality.
+With Node.js 22 or newer installed, run `node --test tests/*.test.cjs tests/*.test.mjs` (or `scripts/check-repository.ps1`). The suites execute production UI/analysis, Help and bounded audio mux functions using synthetic frames/rectangles and a tiny generated AAC fixture. Pinned MP4Box chunks are restored from the committed HTML into a temporary directory, so tests work without a vendor cache, network access, FFmpeg or a new codec installation. They do not replace real inference, native WebCodecs encoding, browser-layout or anonymization-quality checks.
+
+After a full build, run `node scripts/test-artifacts.cjs` to require source/root/dist/restored-self-extract regressions and exact generated-artifact parity. CI runs this before publishing full builds; the preview check uses `--without-self-extract` because its existing build contract skips that wrapper. The standalone PowerShell builder itself retains its existing requirements and does not require Node.
 
 ## Contributing
 

@@ -3,7 +3,11 @@
 ## 1.0.1 - 2026-10-08
 
 - Normalize header EN / JA labels and localized language/Help tooltips and accessible names.
-- Keep the visible app version and release metadata synchronized; normalize existing Japanese local-processing badges without changing processing behavior.
+- Keep the visible app version and release metadata synchronized; normalize existing Japanese local-processing badges.
+- Preserve supported AAC head-priming/full-tail presentation edits and optional leading delay without changing packets or raw media duration. Reject unsupported/trimmed/discontinuous timelines visibly instead of copying misleading audio.
+- Verify raw fragment timing before enabling AAC copy. Restore only proven canonical microsecond video grids for eight explicitly tested common rates; retain exact source endpoints, packet durations and AAC checks across reimport. Reject arbitrary gaps/overlaps and unsupported timelines.
+- Fix native Help backdrop dismissal and restore opener focus on close.
+- Add production-function and pinned-MP4Box regressions, a synthetic AAC fixture, and source/root/dist/self-extract verification gates. Fragmented-container and FFprobe metadata-reporting limitations remain documented; no model, runtime, codec or mask-geometry changes.
 
 ## Unreleased
 - Add a localized Export mask summary for enabled/total automatic paths and manual covers, disabled masks, and enabled automatic paths flagged for review, with a persistent whole-video review reminder.
