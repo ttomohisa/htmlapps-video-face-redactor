@@ -418,3 +418,32 @@ test('every allowed canonical rate rejects a serialized one-tick point change an
     assert.equal(h.context.input.videoClockSpan, null);
   }
 });
+
+function summaryHarness({ certified = false, end = 3000000, media = 2999970, rate = [30, 1] } = {}) {
+  const input = inputFixture(); input.videoTrack.timescale = 1000000; input.videoTrack.duration = media;
+  input.videoClockSpan = certified ? { start: 0, end, duration: media, rate } : null;
+  const h = harness(input); h.elements.meta = { textContent: '' };
+  Object.assign(h.context, { vt: input.videoTrack, at: input.audioTrack, resolutionLabel: '320×180', f: { name: 'synthetic.mp4', size: 1024 } });
+  vm.runInContext(production('fmt') + '\n' + production('videoSummaryDuration', true), h.context);
+  const load = production('loadFile'), start = load.indexOf('let parts='), endBinding = load.indexOf(';canvas.width', start);
+  assert.ok(start >= 0 && endBinding > start, 'production loaded-video summary binding');
+  return { ...h, render: () => h.run(load.slice(start, endBinding) + ';') };
+}
+test('loaded summary uses certified3s presentation rather than the2.999970s media sum', () => {
+  const h = summaryHarness({ certified: true }); h.render();
+  assert.match(h.elements.meta.textContent, /320×180 · 0:03 · audio$/);
+});
+test('short certified fractional endpoint is retained exactly and never rounded up for display', () => {
+  const h = summaryHarness({ certified: true, end: 33334, media: 33334, rate: [60, 1] });
+  assert.equal(h.run('videoSummaryDuration()'), 0.033334); h.render();
+  assert.match(h.elements.meta.textContent, / · 0:00 · audio$/);
+});
+test('uncertified summaries retain the original media-duration fallback and flooring', () => {
+  const h = summaryHarness(); assert.equal(h.run('videoSummaryDuration()'), 2.99997); h.render();
+  assert.match(h.elements.meta.textContent, / · 0:02 · audio$/);
+});
+test('a fractional certified endpoint below the next whole second is not inflated', () => {
+  const h = summaryHarness({ certified: true, end: 2966666, media: 2966637 });
+  assert.equal(h.run('videoSummaryDuration()'), 2.966666); h.render();
+  assert.match(h.elements.meta.textContent, / · 0:02 · audio$/);
+});
