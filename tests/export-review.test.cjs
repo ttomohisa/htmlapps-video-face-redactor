@@ -173,3 +173,34 @@ test('export summary has accessible localized labels and a persistent full-video
   assert.ok(/顔検出には見落としがあります。共有前に動画全体と書き出した結果を確認してください。/.test(source));
   assert.ok(/\.mask-summary[^\n]*minmax\(0,1fr\)/.test(source));
 });
+
+for (const clock of ['classic rational', 'restored microsecond']) test(`one-frame manual masks use a half-open decoded-microsecond interval on ${clock} timestamps`, () => {
+  const h = harness(), scale = clock === 'classic rational' ? 90000 : 1000000;
+  h.sandbox.input.videoSamples = Array.from({ length: 90 }, (_, i) => ({ cts: scale === 90000 ? i * 3000 : Math.round(i * 1000000 / 30), dts: scale === 90000 ? i * 3000 : Math.round(i * 1000000 / 30), duration: scale === 90000 ? 3000 : 33333, timescale: scale, is_sync: true }));
+  delete h.sandbox.input._frameRefs; h.sandbox.video.duration = 3;
+  for (const selected of [0, 1, 30, 89]) {
+    const s = h.sandbox.input.videoSamples[selected], decoded = Math.round(s.cts / s.timescale * 1000000) / 1000000;
+    const range = h.run(`manualRangeAt(${decoded},'frame')`);
+    h.sandbox.oneFrame = { ...manual(), rangeMode: 'frame', first: range.first, last: range.last, keyframes: [rect(range.first, 50), rect(range.last, 50)] };
+    assert.notEqual(h.run(`boxAt(oneFrame,${decoded})`), null, `selected frame ${selected}`);
+    assert.notEqual(h.run(`boxAt(oneFrame,${s.cts / s.timescale})`), null, 'exact source PTS');
+    if (selected > 0) {
+      const before = h.sandbox.input.videoSamples[selected - 1];
+      assert.equal(h.run(`boxAt(oneFrame,${Math.round(before.cts / before.timescale * 1000000) / 1000000})`), null, 'immediate preceding frame');
+    }
+    const next = selected < 89 ? h.sandbox.input.videoSamples[selected + 1] : { cts: 3000000, timescale: 1000000 };
+    assert.equal(h.run(`boxAt(oneFrame,${Math.round(next.cts / next.timescale * 1000000) / 1000000})`), null, `next frame after ${selected}`);
+    assert.equal(h.run(`boxAt(oneFrame,${range.last})`), null, 'exclusive source end boundary');
+  }
+});
+test('one-frame exclusion does not change whole-video, seconds-duration or automatic edge behavior', () => {
+  const h = harness();
+  for (const rangeMode of ['all', '1', '3', '5']) {
+    h.sandbox.edgeTrack = { ...manual(), rangeMode, first: 1, last: 2, keyframes: [rect(1), rect(2)] };
+    for (const time of [0.99995, 1, 2, 2.00005]) assert.notEqual(h.run(`boxAt(edgeTrack,${time})`), null, `${rangeMode} at ${time}`);
+    assert.equal(h.run('boxAt(edgeTrack,2.0002)'), null);
+  }
+  h.sandbox.edgeTrack = { ...automatic(), first: 1, last: 2, keyframes: [rect(1), rect(2)] };
+  assert.notEqual(h.run('boxAt(edgeTrack,0.89)'), null); assert.notEqual(h.run('boxAt(edgeTrack,2.11)'), null);
+  assert.equal(h.run('boxAt(edgeTrack,2.13)'), null);
+});

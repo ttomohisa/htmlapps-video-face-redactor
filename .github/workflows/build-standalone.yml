@@ -20,6 +20,9 @@ jobs:
       - name: Build standalone
         shell: powershell
         run: .\build-standalone.ps1
+
+      - name: Verify generated artifact regressions
+        run: node ./scripts/test-artifacts.cjs
       - uses: actions/upload-artifact@v4
         with:
           name: standalone-html

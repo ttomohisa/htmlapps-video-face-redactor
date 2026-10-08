@@ -103,11 +103,15 @@ if ($source.Contains('const ORT_JS="') -or $source.Contains('const YUNET="')) {
     throw 'Uncompressed embedded detector asset found'
 }
 
-& node --test (Join-Path $Root 'tests/export-review.test.cjs')
-if ($LASTEXITCODE -ne 0) { throw 'Export review regression tests failed.' }
+& node --test (Join-Path $Root 'tests/export-review.test.cjs') (Join-Path $Root 'tests/audio-timeline.test.cjs') (Join-Path $Root 'tests/help-dialog.test.cjs') (Join-Path $Root 'tests/regression-gates.test.cjs')
+if ($LASTEXITCODE -ne 0) { throw 'Application regression tests failed.' }
 
+& node (Join-Path $Root "tests\header-normalization.test.mjs")
+if ($LASTEXITCODE -ne 0) { throw "Header normalization regression failed." }
 Write-Host 'Repository checks passed.' -ForegroundColor Green
 
 if ($Build) {
     & (Join-Path $Root 'build-standalone.ps1') -SkipSelfExtract
+    & node (Join-Path $Root 'scripts/test-artifacts.cjs') --without-self-extract
+    if ($LASTEXITCODE -ne 0) { throw 'Built artifact regression tests failed.' }
 }

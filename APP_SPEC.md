@@ -1,12 +1,12 @@
 # App specification
 
 - **Name:** Video Face Redactor / 動画顔ぼかし
-- **Version:** 1.0.0
+- **Version:** 1.0.1
 - **Primary artifact:** `dist/index.html`
 - **Runtime:** fully client-side; no application-server upload
 - **Runtime network policy:** `connect-src 'none'`
 - **Input v1:** MP4/MOV with H.264/AVC or H.265/HEVC video; HEVC is runtime-gated by browser/device WebCodecs support
-- **Audio v1:** AAC (`mp4a`) is copied without re-encoding when its decoder configuration is available; otherwise export is silent
+- **Audio v1:** AAC (`mp4a`) is copied without re-encoding when its decoder configuration and bounded presentation timeline are supported (see below); otherwise export is silent with a visible warning and disabled audio checkbox.
 - **Export:** H.264 MP4 via WebCodecs + MP4Box.js
 
 ## Face processing
@@ -17,6 +17,7 @@
 - Boxes between keyframes are linearly interpolated.
 - Masks default to 18% padding to reduce visible-face leakage when tracking shifts slightly.
 - Manual masks can be drawn at the current playhead with a per-mask duration of 1 frame, ±1 / ±3 / ±5 seconds, or the whole video.
+- A one-frame manual mask uses a half-open interval from the selected frame to the next frame, compared in the existing decoded integer-microsecond clock. Whole-video, seconds-duration and automatic masks keep their existing boundary behavior.
 - Manual keyframes support per-mask smooth linear interpolation or hold-position mode, and both settings can be changed after selecting the mask.
 
 ## Redaction styles
@@ -87,3 +88,34 @@
 - Gzip MP4Box.js chunks during the Windows build before Base64 embedding instead of embedding the raw ESM text as Base64.
 - Restore compressed assets with `DecompressionStream`; this does not add a new browser requirement because the app already uses the same API to restore the ONNX Runtime WASM payload.
 - Compression must be lossless: the decompressed library/model bytes must match the original bytes exactly.
+
+## Header normalization (1.0.1)
+
+- The language control shows EN in Japanese and JA in English, with a destination title and accessible name localized to the current UI language. Existing header Help attributes are localized.
+- Existing Japanese local-processing badges use 完全ローカル処理, with accurate English wording retained. Layout, processing boundaries, persistence, model/camera behavior, and their existing limitations are unchanged.
+
+## Audio timeline safety (1.0.1)
+
+- Preserve original AAC sample bytes, raw DTS/CTS, media timescale and complete media duration. Do not subtract a presumed 1,024 samples or rewrite fragment packet durations.
+- Support absent/identity edits and one unit-rate media edit that trims only the head and reaches the full media tail, optionally preceded by one empty delay edit. All original AAC packets remain present.
+- Reject shortened tails, multiple/disjoint media edits, nonunit rates, malformed/unknown durations or timescales, nonzero first audio DTS, discontinuities and incompatible video presentation timelines. Unsupported audio is unchecked/disabled, with a localized warning that export will be silent.
+- Before enabling audio, validate retained source fragment boxes. Both selected tracks require explicit `tfdt` and resolved `trun` durations/CTS (including `tfhd` / `trex` duration defaults). AAC must match extraction exactly. For video, only the exact canonical-grid restoration described below may repair MP4Box 2.4.1 timestamp normalization; arbitrary gaps/overlaps, missing timing, mixed classic/fragmented tracks and absent source-boundary proof disable audio.
+- Conservatively require continuous raw audio and otherwise-continuous video samples, with the bounded canonical-grid video exception below. Reordered video remains compatible when its one unit-rate edit starts at the first presented frame and spans the full presentation range; delayed, trimmed or otherwise shifted video timelines disable audio. This does not add general video edit-list support.
+- Compare edit duration against the full remaining media using a maximum tolerance of one source movie tick plus one media tick (container quantization only, never an AAC packet allowance).
+- Rescale only edit segment durations into the output movie clock using cumulative boundaries; preserve each media time in its media clock. Use `elst` version 1 when movie duration exceeds unsigned 32-bit or media time exceeds signed 32-bit range. Keep `mdhd` as raw media duration. Edited `tkhd` is the sum of edit presentation durations; unedited video `tkhd` uses its actual muxed last CTS + stored duration relative to the first DTS. `mvhd` is the maximum track presentation duration.
+- Fragmented MP4 remains the export container. Classic STTS/STSZ sample tables can be empty and `nb_frames` can be unavailable; file verification must read actual fragment sample records. Browser/FFprobe duration reporting can still expose raw fragmented audio duration (for example 3.021333s); FFprobe can also report a nominal last AAC packet duration of 1,024 although the stored final `trun` duration is 640. These reporting differences are not corrected by falsifying media metadata. Verify edit lists, original packet dictionaries including skip metadata, and decoded PCM separately.
+
+## Help dismissal (1.0.1)
+
+- A click on the native Help backdrop closes only when its target is the open dialog and its coordinates are outside the dialog's actual rectangle. Content, padding and boundary clicks stay open.
+- Close and the native close event (including Escape) restore focus to the Help opener.
+
+## Exact canonical video-clock restoration (1.0.1)
+
+- MP4Box 2.4.1 can replace later fragment timestamps with a sum of rounded sample durations. Before analysis/review/export, restore retained raw video DTS/CTS only when an exact canonical proof succeeds: media timebase 1,000,000, zero origin, DTS=CTS, no video edits/reordering, constant correctly rounded duration, known raw duration sum, and every stored timestamp exactly on one approved nearest-integer frame grid.
+- Approved frame rates are 24, 25, 30, 50, 60, 24000/1001, 30000/1001 and 60000/1001. Integer arithmetic checks the complete grid; neither local gap tolerance nor fitted rational cadence can authorize restoration. Canonical rounded grids may contain one-tick gaps or overlaps, depending on which direction their constant duration rounds.
+- Create fresh sample records containing the observed raw DTS/CTS. Preserve compressed bytes, frame order/count, per-sample durations, parser source objects and raw media duration. Save the actual presentation span separately: the last retained CTS plus its stored duration. Never substitute idealized frame-count/rate duration; a two-frame 60 fps source can correctly end at 33,334 microseconds.
+- The loaded-video duration summary uses the already-certified presentation span for this class. Other files retain the existing raw-duration fallback; display formatting does not round fractional clips up.
+- Revalidate the canonical span for audio-copy eligibility. Arbitrary timestamp/CTS/origin/duration changes, edits, unsupported scales/rates and noncanonical discontinuities keep the visible silent-export fallback. This is not general retiming, fragment repair or video edit-list support.
+- The 90-frame 30 fps own-export case retains final PTS 2,966,667 and end 3,000,000 microseconds, while media duration remains 2,999,970. Reimport must not accumulate timestamp loss. Exact frame review and manual frame intervals use the restored clock; the detector, mask geometry and existing encoder keyframe expression are unchanged.
+- Regression coverage serializes real fragment boxes, executes production parsing/restoration/chunk/mux functions, checks all approved rates including short endpoints and two generations, and rejects timestamp perturbations. Fresh two-generation native WebCodecs export/reimport, masks/frames and exact AAC packet/PCM checks remain separate release gates.
