@@ -1,7 +1,7 @@
 # App specification
 
 - **Name:** Video Face Redactor / 動画顔ぼかし
-- **Version:** 1.0.0
+- **Version:** 1.0.1
 - **Primary artifact:** `dist/index.html`
 - **Runtime:** fully client-side; no application-server upload
 - **Runtime network policy:** `connect-src 'none'`
@@ -87,3 +87,8 @@
 - Gzip MP4Box.js chunks during the Windows build before Base64 embedding instead of embedding the raw ESM text as Base64.
 - Restore compressed assets with `DecompressionStream`; this does not add a new browser requirement because the app already uses the same API to restore the ONNX Runtime WASM payload.
 - Compression must be lossless: the decompressed library/model bytes must match the original bytes exactly.
+
+## Header normalization (1.0.1)
+
+- The language control shows EN in Japanese and JA in English, with a destination title and accessible name localized to the current UI language. Existing header Help attributes are localized.
+- Existing Japanese local-processing badges use 完全ローカル処理, with accurate English wording retained. Layout, processing boundaries, persistence, model/camera behavior, and their existing limitations are unchanged.

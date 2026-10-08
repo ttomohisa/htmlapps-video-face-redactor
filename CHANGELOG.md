@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1 - 2026-10-08
+
+- Normalize header EN / JA labels and localized language/Help tooltips and accessible names.
+- Keep the visible app version and release metadata synchronized; normalize existing Japanese local-processing badges without changing processing behavior.
+
 ## Unreleased
 - Add a localized Export mask summary for enabled/total automatic paths and manual covers, disabled masks, and enabled automatic paths flagged for review, with a persistent whole-video review reminder.
 - Reset analysis completion before every full rerun so failures cannot leave desktop Export or mobile Save enabled; ignore late work from failed attempts while preserving manual covers.

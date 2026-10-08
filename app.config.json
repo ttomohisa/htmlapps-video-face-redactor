@@ -3,7 +3,7 @@
   "name": "Video Face Redactor",
   "nameJa": "動画顔ぼかし",
   "slug": "video-face-redactor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Detect, track, and redact faces in H.264 MP4/MOV videos locally with WebCodecs and MP4Box.js.",
   "descriptionJa": "H.264のMP4/MOV動画を端末内で顔検出・追跡し、モザイク・ぼかし・塗りつぶし・絵文字で匿名化します。",
   "defaultLanguage": "auto",

@@ -106,6 +106,8 @@ if ($source.Contains('const ORT_JS="') -or $source.Contains('const YUNET="')) {
 & node --test (Join-Path $Root 'tests/export-review.test.cjs')
 if ($LASTEXITCODE -ne 0) { throw 'Export review regression tests failed.' }
 
+& node (Join-Path $Root "tests\header-normalization.test.mjs")
+if ($LASTEXITCODE -ne 0) { throw "Header normalization regression failed." }
 Write-Host 'Repository checks passed.' -ForegroundColor Green
 
 if ($Build) {
