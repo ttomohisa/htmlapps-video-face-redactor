@@ -18,6 +18,8 @@ GitHub Pages delivers the initial HTML. After it loads, video parsing, face dete
 
 HEVC/H.265 input depends on the browser, OS, and device decoder. The app checks compatibility when a video is selected.
 
+[![Video Face Redactor in English with a manual cover on a synthetic video](assets/screenshot-en.png)](https://ttomohisa.github.io/htmlapps-video-face-redactor/)
+
 ## Features
 
 - Automatically starts face detection after a video is loaded

@@ -1,7 +1,7 @@
 # App specification
 
 - **Name:** Video Face Redactor / 動画顔ぼかし
-- **Version:** 1.0.1
+- **Version:** 1.0.2
 - **Primary artifact:** `dist/index.html`
 - **Runtime:** fully client-side; no application-server upload
 - **Runtime network policy:** `connect-src 'none'`
