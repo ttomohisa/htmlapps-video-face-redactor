@@ -8,6 +8,31 @@ const start = source.indexOf("$('help').onclick=");
 const end = source.indexOf("window.addEventListener('resize'", start);
 assert.ok(start >= 0 && end > start, 'production Help bindings exist');
 const bindings = source.slice(start, end);
+const css = source.match(/<style>([\s\S]*?)<\/style>/)[1];
+function rulesFor(selector) {
+  return [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+    .filter(match => match[1].split(',').some(value => value.trim() === selector))
+    .map(match => match[2]).join(';');
+}
+test('Help shell fits the dynamic viewport without displaying closed dialogs', () => {
+  assert.match(rulesFor('dialog'), /max-height:[^;]*100dvh/);
+  assert.match(rulesFor('dialog'), /overflow:hidden/);
+  assert.doesNotMatch(rulesFor('dialog'), /display:flex/);
+  assert.match(rulesFor('dialog[open]'), /display:flex/);
+  assert.match(rulesFor('dialog[open]'), /flex-direction:column/);
+});
+test('Help body scrolls while its header and close control keep their size', () => {
+  assert.match(rulesFor('.dialog-header'), /flex:0 0 auto/);
+  assert.match(rulesFor('.dialog-header .icon-button'), /flex:0 0 auto/);
+  assert.match(rulesFor('.dialog-body'), /flex:1 1 auto/);
+  assert.match(rulesFor('.dialog-body'), /min-height:0/);
+  assert.match(rulesFor('.dialog-body'), /overflow:auto/);
+  assert.match(rulesFor('.dialog-body'), /overscroll-behavior:contain/);
+});
+test('Background scrolling is locked only while a native modal is open', () => {
+  for (const selector of ['html:has(dialog:modal)', 'body:has(dialog:modal)'])
+    assert.match(rulesFor(selector), /overflow:hidden/, selector);
+});
 function harness() {
   const elements = {};
   for (const id of ['help', 'helpClose', 'helpDialog']) {

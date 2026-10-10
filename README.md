@@ -22,6 +22,7 @@ HEVC/H.265 input depends on the browser, OS, and device decoder. The app checks 
 
 ## Features
 
+- Help content scrolls independently on small screens while its close button stays visible. Background scrolling pauses while a dialog is open and resumes after dismissal.
 - Automatically starts face detection after a video is loaded
 - Face detection with YuNet + ONNX Runtime Web
 - 1 / 2 / 5 / 10 checks per second for re-analysis
