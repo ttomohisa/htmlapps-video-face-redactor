@@ -1,7 +1,7 @@
 # App specification
 
 - **Name:** Video Face Redactor / 動画顔ぼかし
-- **Version:** 1.0.2
+- **Version:** 1.0.3
 - **Primary artifact:** `dist/index.html`
 - **Runtime:** fully client-side; no application-server upload
 - **Runtime network policy:** `connect-src 'none'`
@@ -119,3 +119,8 @@
 - Revalidate the canonical span for audio-copy eligibility. Arbitrary timestamp/CTS/origin/duration changes, edits, unsupported scales/rates and noncanonical discontinuities keep the visible silent-export fallback. This is not general retiming, fragment repair or video edit-list support.
 - The 90-frame 30 fps own-export case retains final PTS 2,966,667 and end 3,000,000 microseconds, while media duration remains 2,999,970. Reimport must not accumulate timestamp loss. Exact frame review and manual frame intervals use the restored clock; the detector, mask geometry and existing encoder keyframe expression are unchanged.
 - Regression coverage serializes real fragment boxes, executes production parsing/restoration/chunk/mux functions, checks all approved rates including short endpoints and two generations, and rejects timestamp perturbations. Fresh two-generation native WebCodecs export/reimport, masks/frames and exact AAC packet/PCM checks remain separate release gates.
+
+## v1.0.3 dialog usability
+
+- Help uses a viewport-bounded native dialog with a non-shrinking header and independently scrollable body at every width. The close control and last help item remain reachable in narrow and short viewports.
+- Lock document and body scrolling only while a native modal is open; automatically restore scrolling after Close, Escape or backdrop dismissal. Preserve native focus restoration and the current processing/export behavior.

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.3 - 2026-10-10
+
+- Keep Help headers/close controls visible and make the content scroll independently in narrow or short viewports.
+- Prevent background scrolling while a native modal is open and restore it on dismissal.
+- Preserve current media processing, export, dependencies and privacy boundaries.
+
 ## 1.0.2 - 2026-10-09
 
 - Add a real English catalog screenshot and use it in the English README, preserving app behavior and the supplied icon.
