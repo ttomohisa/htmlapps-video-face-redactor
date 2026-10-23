@@ -21,6 +21,9 @@
 - Add production-function and pinned-MP4Box regressions, a synthetic AAC fixture, and source/root/dist/self-extract verification gates. Fragmented-container and FFprobe metadata-reporting limitations remain documented; no model, runtime, codec or mask-geometry changes.
 
 ## Unreleased
+
+- Hide only the informational page footer at the existing 600px phone breakpoint. Preserve functional controls, header version, privacy distinctions, and all other responsive boundaries. The equivalent English local-processing badge reads `Fully local processing`.
+
 - Add a localized Export mask summary for enabled/total automatic paths and manual covers, disabled masks, and enabled automatic paths flagged for review, with a persistent whole-video review reminder.
 - Reset analysis completion before every full rerun so failures cannot leave desktop Export or mobile Save enabled; ignore late work from failed attempts while preserving manual covers.
 - Add synthetic-frame regression tests to the repository checks. No detector, model, tracking geometry, or export encoding changes.

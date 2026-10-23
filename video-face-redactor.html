@@ -92,6 +92,7 @@ dialog{border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 80px rg
 @media(max-width:520px){:root{--header-height:58px}.header-inner{padding-block:8px}.brand-mark{width:34px;height:34px;border-radius:10px}.brand-mark svg{width:34px;height:34px}.brand-name{font-size:15px}.brand-meta{display:none}.header-actions{gap:11px}.main{padding-top:18px}.page-intro{padding-bottom:14px}.workspace{padding:10px;border-radius:14px}.viewer{min-height:230px}.track-list{grid-template-columns:1fr}.row{align-items:flex-start}.row select,.row input[type=number],.row input[type=text]{width:132px}.time{min-width:76px}.capability-row span:first-child{min-width:90px}.output-name-row{align-items:center}.output-name-row #outputName{width:min(190px,58vw)}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}.analysis-preview-head svg{animation:none}}
 
+    @media (max-width: 600px) { body > footer { display: none; } }
 </style>
 </head>
 <body class="has-mobile-bottom-bar">
@@ -139,7 +140,7 @@ dialog{border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 80px rg
 <main class="main">
   <section class="page-intro">
     <div><h1 data-ja="動画の顔を、端末内だけで隠す" data-en="Redact faces in video, entirely on-device">動画の顔を、端末内だけで隠す</h1><p data-ja="動画から顔を見つけて動きを追い、モザイク・ぼかし・塗りつぶし・絵文字で隠して保存できます。" data-en="Find faces in a video, follow their movement, hide them with pixelation, blur, fill, or emoji, and save the result.">動画から顔を見つけて動きを追い、モザイク・ぼかし・塗りつぶし・絵文字で隠して保存できます。</p></div>
-    <div class="local-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6z"/><path d="m9 12 2 2 4-5"/></svg><span data-ja="完全ローカル処理" data-en="Video stays on this device">完全ローカル処理</span></div>
+    <div class="local-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6z"/><path d="m9 12 2 2 4-5"/></svg><span data-ja="完全ローカル処理" data-en="Fully local processing">完全ローカル処理</span></div>
   </section>
   <div class="app-layout">
     <aside class="sidebar">
