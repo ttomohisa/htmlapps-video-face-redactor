@@ -92,7 +92,7 @@
 ## Header normalization (1.0.1)
 
 - The language control shows EN in Japanese and JA in English, with a destination title and accessible name localized to the current UI language. Existing header Help attributes are localized.
-- Existing Japanese local-processing badges use 完全ローカル処理, with accurate English wording retained. Layout, processing boundaries, persistence, model/camera behavior, and their existing limitations are unchanged.
+- Existing Japanese local-processing badges use 完全ローカル処理, with equivalent English badge wording standardized to `Fully local processing`. Layout, processing boundaries, persistence, model/camera behavior, and their existing limitations are unchanged.
 
 ## Audio timeline safety (1.0.1)
 
@@ -124,3 +124,7 @@
 
 - Help uses a viewport-bounded native dialog with a non-shrinking header and independently scrollable body at every width. The close control and last help item remain reachable in narrow and short viewports.
 - Lock document and body scrolling only while a native modal is open; automatically restore scrolling after Close, Escape or backdrop dismissal. Preserve native focus restoration and the current processing/export behavior.
+
+## Shared phone layout
+
+Hide only the informational page footer at the existing 600px phone breakpoint. Preserve functional controls, header version, privacy distinctions, and all other responsive boundaries. The equivalent English local-processing badge reads `Fully local processing`.
