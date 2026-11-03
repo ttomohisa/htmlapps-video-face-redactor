@@ -39,6 +39,22 @@ if(-not $specified){$OutputPath=[string]$app.build.output}
 if(-not[IO.Path]::IsPathRooted($OutputPath)){$OutputPath=Join-Path $Root $OutputPath}
 $OutDir=Split-Path -Parent $OutputPath;New-Item -ItemType Directory -Force -Path $OutDir|Out-Null
 $html=[IO.File]::ReadAllText($Source,[Text.Encoding]::UTF8)
+# Keep the source file editable while retaining the exact pinned embedded WASM bytes in the standalone build.
+$ortWasmPlaceholder='__ORT_WASM_GZIP_B64__'
+if(-not $html.Contains($ortWasmPlaceholder)){throw 'Embedded WASM placeholder missing'}
+$ortWasmParts=@(1..7 | ForEach-Object { Join-Path $Root ('src\embedded\ort-wasm-gzip.part{0:D2}.b64' -f $_) })
+foreach($part in $ortWasmParts){if(-not(Test-Path $part)){throw "Missing embedded WASM chunk: $part"}}
+$ortWasmPayload=($ortWasmParts | ForEach-Object { [IO.File]::ReadAllText($_,[Text.Encoding]::ASCII) }) -join ''
+if($ortWasmPayload.Length -ne 4376504 -or -not $ortWasmPayload.StartsWith('H4sI')){throw 'Embedded WASM payload does not match its pinned format'}
+$html=$html.Replace($ortWasmPlaceholder,$ortWasmPayload)
+$buildGeneratedAt=[DateTime]::UtcNow
+$buildInfo=@{
+  '__BUILD_VERSION__'=[string]$app.version
+  '__BUILD_TIMESTAMP_UTC__'=$buildGeneratedAt.ToString('yyyy-MM-dd HH:mm:ss')+' UTC'
+  '__BUILD_DEPENDENCIES__'=[string]@($deps.dependencies).Count
+}
+foreach($key in $buildInfo.Keys){if(-not $html.Contains($key)){throw "Build info placeholder missing: $key"};$html=$html.Replace($key,[string]$buildInfo[$key])}
+
 foreach($depFile in $mp4dep.files){
   $local=Join-Path $VendorDir ([string]$depFile.file)
   $placeholder=[string]$depFile.placeholder
@@ -50,7 +66,7 @@ foreach($depFile in $mp4dep.files){
 }
 $required=@('Video Face Redactor','connect-src ''none''','ORT_JS_GZIP','ORT_WASM_GZIP','YUNET_GZIP','VideoDecoder','VideoEncoder','MP4Box.createFile()','MP4BOX_MAIN_GZIP_B64','gunzipTextB64','emoji')
 foreach($item in $required){if(-not $html.Contains($item)){throw "Required content missing: $item"}}
-if($html.Contains('__MP4BOX_')){throw 'Unresolved MP4Box build placeholder found'}
+if($html.Contains('__MP4BOX_') -or $html.Contains('__ORT_WASM_') -or $html.Contains('__BUILD_')){throw 'Unresolved build placeholder found'}
 if($html -match '<script[^>]+src=["'']https?://'){throw 'Runtime external script source detected'}
 [IO.File]::WriteAllText($OutputPath,$html,(New-Object Text.UTF8Encoding($false)))
 [IO.File]::WriteAllText((Join-Path $OutDir '.nojekyll'),'',(New-Object Text.UTF8Encoding($false)))
@@ -77,7 +93,7 @@ foreach($depFile in $mp4dep.files){
   }
 }
 $manifest=[pscustomobject]@{
-  generatedAt=[DateTime]::UtcNow.ToString('o')
+  generatedAt=$buildGeneratedAt.ToString('o')
   app=[pscustomobject]@{name=[string]$app.name;version=[string]$app.version}
   dependencies=@([pscustomobject]@{name=[string]$mp4dep.name;version=[string]$mp4dep.version;license=[string]$mp4dep.license;files=$manifestFiles})
 }
