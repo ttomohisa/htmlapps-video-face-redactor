@@ -130,7 +130,8 @@ Pagesがまだ有効になっていない場合でも、ワークフローはア
 
 ```text
 .
-├─ src/index.template.html          # アプリ本体と内包ランタイム
+├─ src/index.template.html          # アプリ本体と内包ランタイム（一部はビルド時に組み込み）
+├─ src/embedded/ort-wasm-gzip.part*.b64 # ビルド時に結合する固定版WASM分割データ
 ├─ app.config.json                  # アプリ情報・出力設定
 ├─ dependencies.json                # 固定版MP4Box.jsの情報
 ├─ build-standalone.bat             # Windows用ビルド入口
