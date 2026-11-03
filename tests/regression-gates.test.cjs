@@ -15,3 +15,18 @@ test('full artifact tests precede publication in both full-build workflows', () 
     assert.ok(yaml.indexOf('test-artifacts.cjs') < yaml.indexOf('actions/upload-'));
   }
 });
+
+test('standalone builder reassembles all seven pinned WASM chunks and fills build metadata', () => {
+  const build = fs.readFileSync(path.join(root, 'build-standalone.ps1'), 'utf8');
+  const source = fs.readFileSync(path.join(root, 'src/index.template.html'), 'utf8');
+  assert.match(source, /const ORT_WASM_GZIP="__ORT_WASM_GZIP_B64__"/);
+  for (const marker of ['__BUILD_VERSION__', '__BUILD_TIMESTAMP_UTC__', '__BUILD_DEPENDENCIES__']) {
+    assert.ok(source.includes(marker), marker);
+    assert.ok(build.includes(marker), marker);
+  }
+  const parts = Array.from({length: 7}, (_, i) => fs.readFileSync(path.join(root, 'src', 'embedded', 'ort-wasm-gzip.part' + String(i+1).padStart(2,'0') + '.b64'), 'ascii'));
+  const combined = parts.join('');
+  assert.equal(combined.length, 4376504, 'pinned base64 size');
+  const wasm = require('node:zlib').gunzipSync(Buffer.from(combined, 'base64'));
+  assert.equal(wasm.subarray(0, 4).toString('hex'), '0061736d', 'valid WebAssembly header');
+});
