@@ -3,7 +3,7 @@
 ## 1.0.4 - 2026-11-15
 
 - Hide both local-processing badges on phone-sized screens while preserving them on desktop.
-- Reset a stale video preview when changing files or when loading fails.
+- Reset a stale video preview when changing files or when loading fails; revoke failed media URLs and close failed export codecs.
 - Simplify the Japanese heading and MP4/MOV description; remove the obsolete resolution note from Help.
 - Use a borderless Help close button, show localized build information, keep face-size presets on one line, and explain sensitivity with an information button.
 - Match Image Counter EX’s MP4 download helper (without claiming OS-level automatic opening).
