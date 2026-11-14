@@ -130,7 +130,8 @@ See the [GitHub Pages deployment guide](docs/GITHUB_PAGES.md) for setup and trou
 
 ```text
 .
-├─ src/index.template.html          # Application template and embedded runtime assets
+├─ src/index.template.html          # Application template and inline runtime
+├─ src/embedded/ort-wasm-gzip.part*.b64 # Pinned WASM chunks assembled at build time
 ├─ app.config.json                  # App metadata and output settings
 ├─ dependencies.json                # Pinned MP4Box.js build dependencies
 ├─ build-standalone.bat             # Windows build entry point

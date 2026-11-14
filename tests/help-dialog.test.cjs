@@ -75,3 +75,33 @@ test('Close and native close (including Escape) restore Help focus repeatedly', 
     assert.equal(dialog.open, false); assert.equal(opener.focused, true);
   }
 });
+
+test('Help uses a borderless close control and contains actual build info slots', () => {
+  assert.match(css, /#helpClose\{border:0;background:transparent\}/);
+  assert.match(source, /<details class="build"><summary data-ja="ビルド情報" data-en="Build info">/);
+  for (const id of ['buildVersion', 'builtAt', 'depCount']) assert.ok(source.includes(`id="${id}"`), id);
+  assert.doesNotMatch(source, /元の大きさでは保存できない場合があります。|If the original size cannot be saved, try/);
+});
+test('face size presets do not wrap, and detection sensitivity has a localized explanation', () => {
+  assert.match(css, /\.chips#minChips button\{[^}]*white-space:nowrap/);
+  assert.match(source, /id="scoreHelp"[^>]+aria-controls="scoreHint"/);
+  assert.match(source, /id="scoreHint"[^>]+data-ja="数値を下げると顔を見つけやすくなりますが/);
+  assert.match(source, /data-en="Lower values detect more faces/);
+});
+test('export uses the same saveBlob helper as Image Counter EX', () => {
+  assert.match(source, /function saveBlob\(b,n\)\{const u=URL\.createObjectURL\(b\),a=document\.createElement\('a'\);a.href=u;a.download=n;document.body.appendChild\(a\);a.click\(\);a.remove\(\);setTimeout\(\(\)=>URL\.revokeObjectURL\(u\),1800\)\}/);
+  assert.match(source, /saveBlob\(blob,outputName\)/);
+});
+
+test('phone-only local-processing badges are hidden without hiding desktop badges', () => {
+  assert.match(css, /@media\(max-width:600px\)\{\.local-badge,\.viewer\.has-video #localBadge\{display:none\}\}/);
+});
+test('loading and failed input clear stale previous-video preview state', () => {
+  const start = source.indexOf('async function loadFile(f){');
+  const end = source.indexOf('async function analyzeVideo()', start);
+  assert.ok(start >= 0 && end > start);
+  const load = source.slice(start, end);
+  assert.match(load, /input=null;\$\('viewer'\)\.classList\.remove\('has-video'\);\$\('viewer'\)\.classList\.add\('empty'\)/);
+  assert.match(load, /catch\(e\)\{console\.error\(e\);input=null;file=null;if\(fileUrl\)/);
+  assert.match(load, /video\.removeAttribute\('src'\);video\.load\(\);\$\('viewer'\)\.classList\.remove\('has-video'\)/);
+});

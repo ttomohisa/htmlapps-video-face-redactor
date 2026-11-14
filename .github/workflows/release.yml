@@ -1,0 +1,91 @@
+name: Publish versioned GitHub Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Only trusted default-branch code can create a release.
+permissions:
+  contents: write
+
+concurrency:
+  group: video-face-redactor-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout merged main revision
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Read application version
+        id: version
+        shell: pwsh
+        run: |
+          $config = Get-Content -LiteralPath app.config.json -Raw | ConvertFrom-Json
+          $version = [string]$config.version
+          if ($version -notmatch '^\d+\.\d+\.\d+$') {
+            throw "Expected a stable Semantic Version in app.config.json, received: $version"
+          }
+          "tag=v$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Skip if the version already has a GitHub Release
+        id: existing
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          gh release view $env:RELEASE_TAG --json tagName *> $null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Release $env:RELEASE_TAG already exists; no duplicate release is needed."
+            "needed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          } else {
+            "needed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          }
+
+      - name: Check repository and regression tests
+        if: steps.existing.outputs.needed == 'true'
+        shell: powershell
+        run: .\scripts\check-repository.ps1
+
+      - name: Build standalone and self-extracting HTML
+        if: steps.existing.outputs.needed == 'true'
+        shell: powershell
+        run: .\build-standalone.ps1
+
+      - name: Verify generated artifacts
+        if: steps.existing.outputs.needed == 'true'
+        run: node ./scripts/test-artifacts.cjs
+
+      - name: Create tag and GitHub Release from verified build
+        if: steps.existing.outputs.needed == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          New-Item -ItemType Directory -Path release -Force | Out-Null
+          Copy-Item dist/index.html release/video-face-redactor.html
+          Copy-Item dist/index.self-extract.html release/video-face-redactor.self-extract.html
+          Copy-Item dist/dependency-manifest.json release/dependency-manifest.json
+          Copy-Item dist/self-extract-manifest.json release/self-extract-manifest.json
+
+          $existingTag = git ls-remote --tags origin "refs/tags/$env:RELEASE_TAG"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Could not check whether tag $env:RELEASE_TAG exists."
+          }
+          if ($existingTag) {
+            throw "Tag $env:RELEASE_TAG already exists without a GitHub Release. Inspect the tag before retrying."
+          }
+          $assets = @('release/video-face-redactor.html', 'release/video-face-redactor.self-extract.html', 'release/dependency-manifest.json', 'release/self-extract-manifest.json')
+          gh release create $env:RELEASE_TAG @assets --target $env:GITHUB_SHA --title $env:RELEASE_TAG --generate-notes
+          if ($LASTEXITCODE -ne 0) {
+            throw "Could not publish GitHub Release $env:RELEASE_TAG."
+          }
