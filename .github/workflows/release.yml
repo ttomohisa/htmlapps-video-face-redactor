@@ -42,8 +42,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.version.outputs.tag }}
         run: |
-          # An absent release is normal. Do not run "gh release view" because its
-          # nonzero status terminates the PowerShell step before $LASTEXITCODE.
+          # An absent release is normal. Use a successful list query rather than
+          # a failing per-tag lookup that PowerShell treats as a terminating error.
           $releasesJson = gh release list --json tagName --limit 1000
           if ($LASTEXITCODE -ne 0) {
             throw "Could not list GitHub Releases."
