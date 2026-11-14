@@ -24,7 +24,7 @@ const rect = (t, x = 10) => ({ t, x, y: 8, w: 20, h: 18, score: 0.99 });
 const manual = () => ({ id: 2, manual: true, enabled: true, keyframes: [rect(0, 50), rect(.6, 50)], first: 0, last: .6, uncertain: false, interpolation: 'hold', rangeMode: 'all', anchorTime: .2 });
 const automatic = (id = 1) => ({ id, manual: false, enabled: true, keyframes: [rect(0), rect(.2, 12), rect(.4, 14)], first: 0, last: .4, uncertain: false, interpolation: 'linear', realKeyframes: 3 });
 function harness({ initialDone = true, failure = null, encoderOk = true, busy = false, supported = true } = {}) {
-  const elements = new Map(), callbacks = {}, calls = { detect: 0, decoder: 0, queuedReview: 0, writes: 0 };
+  const elements = new Map(), callbacks = {}, calls = { detect: 0, decoder: 0, queuedReview: 0, writes: 0, revoked: [], mediaResets: 0 };
   function element(id) {
     if (!elements.has(id)) {
       let text = '';
@@ -54,7 +54,7 @@ function harness({ initialDone = true, failure = null, encoderOk = true, busy = 
   const sandbox = { lang: 'en', busy, analysisDone: initialDone, pendingAutoAnalyze: false,
     input: { supported, encoderOk, videoSamples: [0, 200000, 400000].map(cts => ({ cts, dts: cts, duration: 200000, timescale: 1000000, is_sync: true })) },
     file: {}, session: {}, tracks: [automatic(), manual()], nextTrackId: 3, selectedTrackId: null,
-    video: { duration: .6, paused: true, currentTime: 0, pause() { this.paused = true; } },
+    video: { duration: .6, paused: true, currentTime: 0, pause() { this.paused = true; }, removeAttribute() {}, load() { calls.mediaResets++; } },
     reviewDecodeToken: 0, reviewFrame: null, reviewFrameTime: null, reviewDecoding: false, analysisFrameInfo: new Map(),
     $: element, mobileBottom: { enabled: null, setEnabled(key, value) { assert.equal(key, 'save'); this.enabled = value; } },
     VideoDecoder: SyntheticDecoder, detectFrame: async f => { calls.detect++; if (behavior.failure === 'partial' && calls.detect === 2) throw Error('synthetic detection failure'); return [rect(f.timestamp / 1e6, 10 + f.timestamp / 100000)]; },
@@ -65,7 +65,7 @@ function harness({ initialDone = true, failure = null, encoderOk = true, busy = 
     canvas: { width: 0, height: 0, classList: { remove() {}, add() {} }, addEventListener(name, callback) { callbacks[name] = callback; } },
     displayDims() { return { w: 96, h: 64 }; }, displayBoxToCoded: box => ({ ...box }),
     syncManualControls() {}, seekReviewTo() {}, queueMicrotask() { calls.queuedReview++; }, console: { error() {} },
-    browserCaps: {}, mp4boxReady: Promise.reject(Error('synthetic new-file load failure'))
+    browserCaps: {}, fileUrl: '', URL: { revokeObjectURL(url) { calls.revoked.push(url); } }, mp4boxReady: Promise.reject(Error('synthetic new-file load failure'))
   };
   // loadFile owns the intentionally failed metadata promise in tests that call it.
   sandbox.mp4boxReady.catch(() => {});
@@ -203,4 +203,14 @@ test('one-frame exclusion does not change whole-video, seconds-duration or autom
   h.sandbox.edgeTrack = { ...automatic(), first: 1, last: 2, keyframes: [rect(1), rect(2)] };
   assert.notEqual(h.run('boxAt(edgeTrack,0.89)'), null); assert.notEqual(h.run('boxAt(edgeTrack,2.11)'), null);
   assert.equal(h.run('boxAt(edgeTrack,2.13)'), null);
+});
+
+test('failed video loading revokes the old media URL and offers a fresh file selection', async () => {
+  const h = harness(); h.sandbox.fileUrl = 'blob:previous-video';
+  await h.run("loadFile({name:'broken.mp4',size:1000})");
+  assert.equal(h.sandbox.fileUrl, '');
+  assert.deepEqual(h.calls.revoked, ['blob:previous-video']);
+  assert.equal(h.calls.mediaResets, 1);
+  assert.match(h.element('meta').textContent, /Choose another MP4 \/ MOV/);
+  assertGate(h, false);
 });
