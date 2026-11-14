@@ -23,7 +23,9 @@ test('Help shell fits the dynamic viewport without displaying closed dialogs', (
 });
 test('Help body scrolls while its header and close control keep their size', () => {
   assert.match(rulesFor('.dialog-header'), /flex:0 0 auto/);
-  assert.match(rulesFor('.dialog-header .icon-button'), /flex:0 0 auto/);
+  assert.match(rulesFor('.dialog-header .dialog-close'), /flex:0 0 auto/);
+  assert.match(rulesFor('.dialog-header .dialog-close'), /margin-left:auto/);
+  assert.doesNotMatch(css, /\.dialog-header \.icon-button\{/);
   assert.match(rulesFor('.dialog-body'), /flex:1 1 auto/);
   assert.match(rulesFor('.dialog-body'), /min-height:0/);
   assert.match(rulesFor('.dialog-body'), /overflow:auto/);
