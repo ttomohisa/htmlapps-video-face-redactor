@@ -37,7 +37,9 @@ test('release workflow runs after main merge and tests HTML before publishing a 
   assert.match(yaml, /permissions:\s*\n\s*contents: write/);
   assert.match(yaml, /github\.ref == 'refs\/heads\/main'/);
   assert.match(yaml, /app\.config\.json/);
-  assert.match(yaml, /gh release view/);
+  assert.match(yaml, /gh release list --json tagName --limit 1000/);
+  assert.doesNotMatch(yaml, /gh release view/);
+  assert.match(yaml, /\$alreadyReleased = @\(\$releases \| Where-Object/);
   assert.match(yaml, /gh release create/);
   assert.ok(yaml.indexOf('check-repository.ps1') < yaml.indexOf('gh release create'));
   assert.ok(yaml.indexOf('test-artifacts.cjs') < yaml.indexOf('gh release create'));
