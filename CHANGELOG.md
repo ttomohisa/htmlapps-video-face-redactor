@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.0.4 - 2026-11-15
+
+- Hide both local-processing badges on phone-sized screens while preserving them on desktop.
+- Reset a stale video preview when changing files or when loading fails.
+- Simplify the Japanese heading and MP4/MOV description; remove the obsolete resolution note from Help.
+- Use a borderless Help close button, show localized build information, keep face-size presets on one line, and explain sensitivity with an information button.
+- Match Image Counter EX’s MP4 download helper (without claiming OS-level automatic opening).
+- Verify the single-file WASM embedding and release v1.0.4 automatically after successful main-branch build checks.
+
+- Hide only the informational page footer at the existing 600px phone breakpoint. Preserve functional controls, header version, privacy distinctions, and all other responsive boundaries. The equivalent English local-processing badge reads `Fully local processing`.
+
+- Add a localized Export mask summary for enabled/total automatic paths and manual covers, disabled masks, and enabled automatic paths flagged for review, with a persistent whole-video review reminder.
+- Reset analysis completion before every full rerun so failures cannot leave desktop Export or mobile Save enabled; ignore late work from failed attempts while preserving manual covers.
+- Add synthetic-frame regression tests to the repository checks. No detector, model, tracking geometry, or export encoding changes.
+
 ## 1.0.3 - 2026-10-10
 
 - Keep Help headers/close controls visible and make the content scroll independently in narrow or short viewports.
@@ -19,14 +34,6 @@
 - Fix native Help backdrop dismissal and restore opener focus on close.
 - Show certified presentation duration in the loaded-video summary and keep one-frame manual masks confined to the selected decoded-frame interval.
 - Add production-function and pinned-MP4Box regressions, a synthetic AAC fixture, and source/root/dist/self-extract verification gates. Fragmented-container and FFprobe metadata-reporting limitations remain documented; no model, runtime, codec or mask-geometry changes.
-
-## Unreleased
-
-- Hide only the informational page footer at the existing 600px phone breakpoint. Preserve functional controls, header version, privacy distinctions, and all other responsive boundaries. The equivalent English local-processing badge reads `Fully local processing`.
-
-- Add a localized Export mask summary for enabled/total automatic paths and manual covers, disabled masks, and enabled automatic paths flagged for review, with a persistent whole-video review reminder.
-- Reset analysis completion before every full rerun so failures cannot leave desktop Export or mobile Save enabled; ignore late work from failed attempts while preserving manual covers.
-- Add synthetic-frame regression tests to the repository checks. No detector, model, tracking geometry, or export encoding changes.
 
 ## 1.0.0
 - Fixed portrait smartphone videos whose MP4 track stores landscape coded dimensions plus rotation metadata: detected face boxes are now mapped between coded and displayed coordinates correctly.
