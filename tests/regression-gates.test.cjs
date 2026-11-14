@@ -43,3 +43,13 @@ test('release workflow runs after main merge and tests HTML before publishing a 
   assert.ok(yaml.indexOf('test-artifacts.cjs') < yaml.indexOf('gh release create'));
   assert.match(yaml, /release\/video-face-redactor\.self-extract\.html/);
 });
+
+test('failed exports close encoder and decoder before re-enabling export actions', () => {
+  const source = fs.readFileSync(path.join(root, 'src/index.template.html'), 'utf8');
+  const start = source.indexOf('async function exportVideo()');
+  const end = source.indexOf("$('export').onclick=exportVideo", start);
+  assert.ok(start >= 0 && end > start);
+  const method = source.slice(start, end);
+  assert.match(method, /let encoder=null,decoder=null;try\{/);
+  assert.match(method, /finally\{try\{decoder\?\.close\(\)\}catch\{\}try\{encoder\?\.close\(\)\}catch\{\}busy=false/);
+});
