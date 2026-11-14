@@ -102,5 +102,6 @@ test('loading and failed input clear stale previous-video preview state', () => 
   assert.ok(start >= 0 && end > start);
   const load = source.slice(start, end);
   assert.match(load, /input=null;\$\('viewer'\)\.classList\.remove\('has-video'\);\$\('viewer'\)\.classList\.add\('empty'\)/);
-  assert.match(load, /catch\(e\)\{console\.error\(e\);input=null;\$\('viewer'\)\.classList\.remove\('has-video'\)/);
+  assert.match(load, /catch\(e\)\{console\.error\(e\);input=null;file=null;if\(fileUrl\)/);
+  assert.match(load, /video\.removeAttribute\('src'\);video\.load\(\);\$\('viewer'\)\.classList\.remove\('has-video'\)/);
 });
