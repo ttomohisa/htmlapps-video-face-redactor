@@ -92,3 +92,15 @@ test('export uses the same saveBlob helper as Image Counter EX', () => {
   assert.match(source, /function saveBlob\(b,n\)\{const u=URL\.createObjectURL\(b\),a=document\.createElement\('a'\);a.href=u;a.download=n;document.body.appendChild\(a\);a.click\(\);a.remove\(\);setTimeout\(\(\)=>URL\.revokeObjectURL\(u\),1800\)\}/);
   assert.match(source, /saveBlob\(blob,outputName\)/);
 });
+
+test('phone-only local-processing badges are hidden without hiding desktop badges', () => {
+  assert.match(css, /@media\(max-width:600px\)\{\.local-badge,\.viewer\.has-video #localBadge\{display:none\}\}/);
+});
+test('loading and failed input clear stale previous-video preview state', () => {
+  const start = source.indexOf('async function loadFile(f){');
+  const end = source.indexOf('async function analyzeVideo()', start);
+  assert.ok(start >= 0 && end > start);
+  const load = source.slice(start, end);
+  assert.match(load, /input=null;\$\('viewer'\)\.classList\.remove\('has-video'\);\$\('viewer'\)\.classList\.add\('empty'\)/);
+  assert.match(load, /catch\(e\)\{console\.error\(e\);input=null;\$\('viewer'\)\.classList\.remove\('has-video'\)/);
+});
