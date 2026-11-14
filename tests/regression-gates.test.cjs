@@ -30,3 +30,16 @@ test('standalone builder reassembles all seven pinned WASM chunks and fills buil
   const wasm = require('node:zlib').gunzipSync(Buffer.from(combined, 'base64'));
   assert.equal(wasm.subarray(0, 4).toString('hex'), '0061736d', 'valid WebAssembly header');
 });
+
+test('release workflow runs after main merge and tests HTML before publishing a unique version tag', () => {
+  const yaml = fs.readFileSync(path.join(root, '.github/workflows/release.yml'), 'utf8');
+  assert.match(yaml, /push:\s*\n\s*branches: \[main\]/);
+  assert.match(yaml, /permissions:\s*\n\s*contents: write/);
+  assert.match(yaml, /github\.ref == 'refs\/heads\/main'/);
+  assert.match(yaml, /app\.config\.json/);
+  assert.match(yaml, /gh release view/);
+  assert.match(yaml, /gh release create/);
+  assert.ok(yaml.indexOf('check-repository.ps1') < yaml.indexOf('gh release create'));
+  assert.ok(yaml.indexOf('test-artifacts.cjs') < yaml.indexOf('gh release create'));
+  assert.match(yaml, /release\/video-face-redactor\.self-extract\.html/);
+});
