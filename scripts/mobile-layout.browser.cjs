@@ -2,7 +2,7 @@
 // Synthetic inputs only. No camera, clipboard, permissions, or external upload.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {pathToFileURL}=require('node:url'),{chromium}=require('playwright');
-const cfg={"slug": "video-face-redactor", "bp": 600, "nav": "#appMobileBottomBar", "help": "#help", "lang": "#lang", "close": "#helpClose", "badge": ".local-badge span[data-ja]", "hideBadge": false, "selfExtract": false};
+const cfg={"slug": "video-face-redactor", "bp": 600, "nav": "#appMobileBottomBar", "help": "#help", "lang": "#lang", "close": "#helpClose", "badge": ".local-badge span[data-ja]", "hideBadge": true, "selfExtract": false};
 const evidence=path.resolve('test-results/mobile-layout');
 async function bounds(locator,width,height,label,vertical=true){const r=await locator.boundingBox();assert.ok(r&&r.x>=-1&&r.x+r.width<=width+1&&(!vertical||(r.y>=-1&&r.y+r.height<=height+1)),label+': bounds '+JSON.stringify(r));}
 async function main(){fs.mkdirSync(evidence,{recursive:true});const browser=await chromium.launch();try{
@@ -15,10 +15,12 @@ await page.waitForFunction(()=>document.documentElement.dataset.appLoaded==='1'&
 if(await page.locator('html').getAttribute('lang')!==language)await page.locator(cfg.lang).click();
 assert.equal((await page.locator(cfg.badge).textContent()).trim(),language==='ja'?'完全ローカル処理':'Fully local processing');
 assert.equal(await page.locator('.local-badge').isVisible(),cfg.hideBadge?width>cfg.bp:true,label+': existing badge visibility');if(await page.locator('.local-badge').isVisible())await bounds(page.locator('.local-badge'),width,height,label,false);
+await page.locator('#viewer').evaluate(e=>e.classList.add('has-video'));assert.equal(await page.locator('#localBadge').isVisible(),width>cfg.bp,label+': preview privacy badge visibility');await page.locator('#viewer').evaluate(e=>e.classList.remove('has-video'));
+
 assert.equal(await page.locator('body > footer').isVisible(),width>cfg.bp,label+': informational footer');
 assert.equal(await page.locator('#viewerOpen').isVisible(),true);assert.equal(await page.locator('#export').isDisabled(),true);assert.equal(await page.locator('[data-mobile-key="save"]').isDisabled(),true);
 if(cfg.nav){assert.equal(await page.locator(cfg.nav).isVisible(),width<=cfg.bp,label+': functional navigation');if(width<=cfg.bp)await bounds(page.locator(cfg.nav),width,height,label);}
-for(const w of [cfg.bp+1,cfg.bp,width]){await page.setViewportSize({width:w,height});assert.equal(await page.locator('body > footer').isVisible(),w>cfg.bp,label+': footer resize');}
+for(const w of [cfg.bp+1,cfg.bp,width]){await page.setViewportSize({width:w,height});assert.equal(await page.locator('body > footer').isVisible(),w>cfg.bp,label+': footer resize');assert.equal(await page.locator('.local-badge').isVisible(),w>cfg.bp,label+': mobile privacy badge resize');}
 await page.evaluate(()=>scrollTo({left:0,top:0,behavior:'instant'}));await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
 assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),label+': page width');if(cfg.nav&&width<=cfg.bp)await bounds(page.locator(cfg.nav),width,height,label);
 await page.locator(cfg.help).click();const body=page.locator('#helpDialog .dialog-body');
