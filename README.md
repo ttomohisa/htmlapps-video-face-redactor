@@ -70,14 +70,14 @@ The first build needs network access only to download the pinned MP4Box.js files
 
 ## Usage
 
-1. Choose an MP4 or MOV video from the file picker or directly from the empty preview area.
+1. Select **Choose a video** or drop an MP4 or MOV onto the preview.
 2. Wait for automatic face detection to finish. Progress is shown in the preview.
 3. Use **Review / Edit** for playback and frame stepping. Select a track, a timeline marker, or **Go to next scene to review** in the export settings to pause on the relevant frame and outline the face. For a brief detection, choose **Hide this face** or **Dismiss candidate** after inspecting it.
 4. If a mask is misplaced, stop on that frame and use **Find faces in this scene again**.
 5. Choose **Pixelate**, **Blur**, **Fill**, or **Emoji** as the hiding style.
 6. Adjust the mask padding if the edge of a face remains visible.
-7. Add a manual mask when automatic detection misses a face, then choose how long it should remain and whether its position should move.
-8. On a phone, tap **Save** to open the export settings. Set the output filename, resolution, quality, and audio option.
+7. For a missed face, select **+ Add a mask** beside the playback controls and drag around the face. Use **Style → Manual mask settings** to change its duration and movement.
+8. Select **Export** beside the desktop preview or **Save** in the phone navigation. Set the output filename, resolution, quality, and audio option.
 9. Check the Export mask summary: enabled/total automatic paths and manual covers, disabled masks, and enabled automatic paths flagged for review. Paths are not unique-person counts; zero masks or zero flags does not mean every face is hidden.
 10. Export the H.264 MP4. The entire file uses the masks and style selected at the start of the export. With zero enabled masks, select **Export without hiding faces** and confirm to continue. Review the entire result before sharing it. If a full re-analysis fails, retry it before exporting.
 
@@ -91,7 +91,7 @@ On screens up to 600px wide, a fixed bottom navigation bar provides quick access
 - **Style** — pixelate / blur / fill / emoji and manual masks
 - **Save** — output filename and export settings
 
-The hiding-style buttons appear directly below the preview on mobile, while mask padding is kept as a small secondary control so it is not confused with the video timeline.
+On a phone, **Review / Edit** shows the mask list and **Style** shows effects and padding. The **− / +** controls in the preview also adjust padding.
 
 ## Supported formats
 
