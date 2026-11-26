@@ -68,7 +68,7 @@ $sourceRequirements = @(
     'has-mobile-bottom-bar',
     'data-mobile-key="style"',
     'preview-padding-mobile-overlay',
-    'effectMobileMount',
+    'settingsNav',
     'data-effect-choice="emoji"',
     'data-manual-duration="3"',
     '.viewer.empty canvas{display:none}',
