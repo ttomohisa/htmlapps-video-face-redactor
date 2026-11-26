@@ -14,7 +14,7 @@ async function main() {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(pathToFileURL(path.resolve('dist/index.html')).href);
-    assert.equal(await page.locator('#viewerOpen').isVisible(), true);
+    await page.locator('#viewerOpen').waitFor();
     assert.equal(await page.locator('#open').isVisible(), false, 'one primary file picker before loading');
     await page.setViewportSize({width:1280, height:800});
     await page.locator('#settingsNav [aria-controls="detectSection"]').click();
