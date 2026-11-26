@@ -72,14 +72,14 @@ The first build needs network access only to download the pinned MP4Box.js files
 
 1. Choose an MP4 or MOV video from the file picker or directly from the empty preview area.
 2. Wait for automatic face detection to finish. Progress is shown in the preview.
-3. Use **Review / Edit** to play the video or move one frame at a time.
+3. Use **Review / Edit** for playback and frame stepping. Select a track, a timeline marker, or **Go to next scene to review** in the export settings to pause on the relevant frame and outline the face. For a brief detection, choose **Hide this face** or **Dismiss candidate** after inspecting it.
 4. If a mask is misplaced, stop on that frame and use **Find faces in this scene again**.
 5. Choose **Pixelate**, **Blur**, **Fill**, or **Emoji** as the hiding style.
 6. Adjust the mask padding if the edge of a face remains visible.
 7. Add a manual mask when automatic detection misses a face, then choose how long it should remain and whether its position should move.
-8. Set the output filename, resolution, quality, and audio option.
+8. On a phone, tap **Save** to open the export settings. Set the output filename, resolution, quality, and audio option.
 9. Check the Export mask summary: enabled/total automatic paths and manual covers, disabled masks, and enabled automatic paths flagged for review. Paths are not unique-person counts; zero masks or zero flags does not mean every face is hidden.
-10. Export the H.264 MP4 and review the entire result before sharing it. If a full re-analysis fails, finish a successful retry before Export or mobile Save becomes available.
+10. Export the H.264 MP4. The entire file uses the masks and style selected at the start of the export. With zero enabled masks, select **Export without hiding faces** and confirm to continue. Review the entire result before sharing it. If a full re-analysis fails, retry it before exporting.
 
 ### Mobile controls
 

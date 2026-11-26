@@ -30,7 +30,8 @@ function harness({ initialDone = true, failure = null, encoderOk = true, busy = 
       let text = '';
       elements.set(id, { disabled: false, style: {}, dataset: {}, value: id === 'detectFps' ? '5' : '', innerHTML: '',
         get textContent() { return text; }, set textContent(value) { calls.writes++; text = value; },
-        classList: { remove() {}, add() {}, toggle() {} }, setAttribute() {},
+        classList: { remove() {}, add() {}, toggle() {} }, setAttribute() {}, focus() {}, scrollIntoView() {},
+        querySelector() { return null; },
         querySelectorAll(selector) {
           const attribute = selector.slice(1, -1);
           return [...this.innerHTML.matchAll(new RegExp(`${attribute}="(\\d+)"`, 'g'))].map(match => {
@@ -62,16 +63,17 @@ function harness({ initialDone = true, failure = null, encoderOk = true, busy = 
     renderMarks() {}, setAnalysisPreviewProgress() {}, toast() {}, drawPreview() {}, renderReviewState() {},
     updatePlayButton() {}, renderCapabilityStatus() {}, stopPlaybackPreview() {}, setManualEnabled() {}, startAutoAnalysisIfReady() {},
     document: { documentElement: {}, querySelectorAll() { return []; } },
-    canvas: { width: 0, height: 0, classList: { remove() {}, add() {} }, addEventListener(name, callback) { callbacks[name] = callback; } },
+    canvas: { width: 0, height: 0, classList: { remove() {}, add() {}, toggle() {} }, addEventListener(name, callback) { callbacks[name] = callback; } },
     displayDims() { return { w: 96, h: 64 }; }, displayBoxToCoded: box => ({ ...box }),
-    syncManualControls() {}, seekReviewTo() {}, queueMicrotask() { calls.queuedReview++; }, console: { error() {} },
+    syncManualControls() {}, seekReviewTo(time) { calls.seekTime = time; }, queueMicrotask() { calls.queuedReview++; }, console: { error() {} },
     browserCaps: {}, fileUrl: '', URL: { revokeObjectURL(url) { calls.revoked.push(url); } }, mp4boxReady: Promise.reject(Error('synthetic new-file load failure'))
   };
   // loadFile owns the intentionally failed metadata promise in tests that call it.
   sandbox.mp4boxReady.catch(() => {});
   vm.createContext(sandbox);
   vm.runInContext(names.map(name => production(name)).join('\n') + '\n' +
-    ['maskSummaryCounts', 'renderMaskSummary'].map(name => production(name, true)).join('\n'), sandbox);
+    ['maskSummaryCounts', 'renderMaskSummary', 'fmtPts', 'reviewTrack', 'reviewTrackTime', 'needsReview',
+      'nextReviewTrack', 'removeTrack', 'readMaskStyle', 'captureExportSettings', 'analysisResultLabel'].map(name => production(name, true)).join('\n'), sandbox);
   for (const pattern of ["$('clearTracks').onclick=", "canvas.addEventListener('pointerup'"]) {
     vm.runInContext(lines.find(line => line.startsWith(pattern)), sandbox);
   }
@@ -213,4 +215,105 @@ test('failed video loading revokes the old media URL and offers a fresh file sel
   assert.equal(h.calls.mediaResets, 1);
   assert.match(h.element('meta').textContent, /Choose another MP4 \/ MOV/);
   assertGate(h, false);
+});
+
+test('weak isolated detections stay available for review until accepted or removed', () => {
+  const h = harness();
+  const weak = { ...automatic(7), keyframes: [{ ...rect(.2), score: .7 }] };
+  h.sandbox.tracks = [weak];
+  h.run('compactTracks(5)');
+  assert.equal(h.sandbox.tracks.length, 1);
+  assert.equal(weak.enabled, false);
+  assert.equal(h.run('boxAt(tracks[0], .2)'), null);
+  h.callbacks['select:7'].onclick();
+  assert.equal(h.calls.seekTime, .2);
+  assert.ok(h.run('boxAt(tracks[0], .2, true)'), 'inactive candidate can be outlined');
+  h.callbacks['toggle:7'].checked = true;
+  h.callbacks['toggle:7'].onchange();
+  h.run('compactTracks(5)');
+  assert.equal(weak.enabled, true, 'later compaction preserves acceptance');
+  assert.ok(h.run('boxAt(tracks[0], .2)'));
+  assert.equal(h.run('needsReview(tracks[0])'), false);
+  assert.equal(h.element('maskFlagged').textContent, '0');
+  h.callbacks['del:7'].onclick();
+  assert.equal(h.sandbox.tracks.length, 0);
+});
+
+test('a confirmed redetection promotes a pending brief candidate to an active mask', () => {
+  const h = harness();
+  h.sandbox.tracks = [{ ...automatic(), keyframes: [{ ...rect(.2), score: .7 }] }];
+  h.run('compactTracks(5)');
+  h.run('applyRedetectionAt(.2, [{x:10,y:8,w:20,h:18,score:.9}])');
+  assert.equal(h.sandbox.tracks.length, 1);
+  assert.equal(h.sandbox.tracks[0].candidate, false);
+  assert.ok(h.run('boxAt(tracks[0], .2)'));
+});
+
+test('a timeline marker selects the same exact frame as its candidate row', () => {
+  const h = harness(), markers = [];
+  h.sandbox.document.createElement = tag => ({ tag, style: {}, setAttribute() {} });
+  h.element('marks').append = button => markers.push(button);
+  h.sandbox.tracks = [{ ...automatic(8), first: .2, last: .2, keyframes: [rect(.2)], enabled: false, uncertain: true, candidate: true }];
+  h.run(production('renderMarks')+'\nrenderMarks()');
+  assert.equal(markers.length, 1);
+  assert.equal(markers[0].tag, 'button');
+  markers[0].onclick();
+  assert.equal(h.calls.seekTime, .2);
+  assert.equal(h.sandbox.selectedTrackId, 8);
+});
+
+test('automatic rows seek to a detected frame and the summary cycles flagged paths', () => {
+  const h = harness();
+  h.sandbox.tracks = [automatic(), { ...automatic(4), uncertain: true, first: .4, keyframes: [rect(.4)] }];
+  h.run('renderTracks()');
+  h.callbacks['select:1'].onclick();
+  assert.equal(h.calls.seekTime, 0);
+  h.run('nextReviewTrack()');
+  assert.equal(h.calls.seekTime, .4);
+  assert.equal(h.sandbox.selectedTrackId, 4);
+  assert.match(h.element('trackList').innerHTML, /<button[^>]*data-select=/);
+});
+
+test('mobile save opens export settings and zero masks have an explicit localized export action', () => {
+  const h = harness();
+  assert.ok(/data-mobile-key="save"[^>]*data-mobile-target="exportSection"/.test(source));
+  assert.ok(!/data-mobile-key="save"[^>]*data-mobile-action=/.test(source));
+  h.sandbox.tracks = [];
+  h.run('renderMaskSummary()');
+  assert.equal(h.element('export').textContent, 'Export without hiding faces');
+  h.run("lang='ja';renderMaskSummary()");
+  assert.equal(h.element('export').textContent, '顔を隠さずに書き出す');
+  h.sandbox.tracks = [manual()];
+  h.run('renderMaskSummary()');
+  assert.equal(h.element('export').textContent, '動画を書き出す');
+});
+
+test('export captures independent geometry, style, audio selection and filename', () => {
+  const h = harness();
+  h.sandbox.getOutputFilename = () => 'original.mp4';
+  h.sandbox.audioCanCopy = () => true;
+  h.element('effect').value = 'blur';
+  h.element('blurSize').value = '12';
+  h.element('padding').value = '18';
+  h.element('keepAudio').checked = true;
+  assert.equal(h.run('typeof captureExportSettings'), 'function');
+  const snapshot = h.run('captureExportSettings()');
+  h.sandbox.tracks[0].enabled = false;
+  h.sandbox.tracks[0].keyframes[0].x = 900;
+  h.element('effect').value = 'emoji';
+  h.element('keepAudio').checked = false;
+  assert.equal(snapshot.tracks[0].enabled, true);
+  assert.equal(snapshot.tracks[0].keyframes[0].x, 10);
+  assert.equal(snapshot.style.effect, 'blur');
+  assert.equal(snapshot.style.blurSize, 12);
+  assert.equal(snapshot.style.padding, 18);
+  assert.equal(snapshot.copyAudio, true);
+  assert.equal(snapshot.filename, 'original.mp4');
+});
+
+test('Japanese analysis result counts tracking intervals instead of people', async () => {
+  const h = harness();
+  h.run("lang='ja'");
+  await h.analyze();
+  assert.match(h.element('analysisStatus').textContent, /顔を追跡した区間が1件あります/);
 });
